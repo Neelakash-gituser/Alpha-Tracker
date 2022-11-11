@@ -177,7 +177,7 @@ class MarketScreener:
                 mov_20 = new_df['SMA_20'][-1]
                 mov_50 = new_df['SMA_50'][-1]
                 lows = round(min(new_df['Low'][(-int(weeks)*5):]), 2)
-                highs = round(min(new_df['High'][(-int(weeks)*5):]), 2)
+                highs = round(max(new_df['High'][(-int(weeks)*5):]), 2)
                 scores = round(df[df['TIC'] == i]['Score'].to_list()[0])
                 vola = np.std(new_df['Adj Close'].pct_change()) * np.sqrt(252)
                 sharpe = round((((((1+new_df['Adj Close'].pct_change()).cumprod()[-1] - 1) / (self.lookback)) * 252) / vola), 2)
@@ -230,7 +230,7 @@ class MarketScreener:
                     }, ignore_index=True)
 
             except Exception as e:
-                print(f"{e} for {i}")
+                pass
 
         final = final_df.sort_values(by="Score", ascending=False)
         final.reset_index(inplace=True, drop=True)
