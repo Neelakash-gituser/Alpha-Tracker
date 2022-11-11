@@ -9,7 +9,7 @@ print("\n\n")
 state = True
 
 while state:
-    print("Enter your preferred Index Name\n")
+    print("\nEnter your preferred Index Name\n")
     indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
     index = indexes[int(input('1.Nifty 50\n2.Bank Nifty\n3.Nasdaq\n4.S&P500\n5.FTSE250\n6.FTSE100\n7.DOW\n8.IBOVESPA\n9.NSE All\n10.NSE Custom\n>>> '))-1]
     obj = MarketScreener(index)
@@ -17,7 +17,11 @@ while state:
     # Driver Code
     screen = input("\nInterested in using screener ? Y/N\n>>> ").upper().strip()
     if screen == "Y":
-        print(obj._index_stocks_stats())
+        dataf = obj._index_stocks_stats()
+        print(dataf)
+        save = input("\nWant it in an Excel file ? Y/N\n>>> ").strip().upper()
+        if save == "Y":
+            dataf.to_excel(f"{index}.xlsx", index=False)
 
     # Next Baseline
     base = input("\nInterested to see how the Baseline Index Performed ? Y/N\n>>> ").upper().strip()
@@ -110,7 +114,7 @@ while state:
             stock_names_corr.append(input(">>> ").strip().upper())
 
         print("\nThe correlation matrix for the given stocks\n", obj.corr_cals(stock_names_corr))
-    
+
     contin = input("\nContinue to screen other stock indexes ? Y/N\n>>> ").strip().upper()
-    if contin == "Y":
+    if contin == "N":
         state = False
