@@ -7,7 +7,7 @@ import datetime as dt
 import yfinance as yf
 import plotly.graph_objects as go
 
-
+from tqdm import tqdm
 from numpy.linalg import inv
 from pypfopt import risk_models
 from pypfopt import expected_returns
@@ -96,7 +96,7 @@ class MarketScreener:
             tickers = []
             url = pd.read_csv('./ind_nifty100list.csv')['Symbol']
 
-            tickers = url.apply(lambda x: x.strip() +'.NS').to_list()
+            tickers = list(url.apply(lambda x: x.strip() +'.NS').unique())
 
             baseline = yf.download(tickers='^NSEI', start=self.start, end=self.end, progress=False)
             self.tickers = tickers
@@ -147,7 +147,7 @@ class MarketScreener:
                                         f'{int(weeks)}_Week_High',
                                         'Annual Volatility', 'Sharpe Ratio', 'MaxDD', 'CVaR', 'VaR'])
 
-        for i in self.tickers:
+        for i in tqdm(self.tickers):
             try:
                 data = yf.download(tickers=i, start=self.start, end=self.end, progress=False)
                 data.to_csv('data/'+i+'.csv')
@@ -163,7 +163,7 @@ class MarketScreener:
         df['Score'] = df['Returns Relative to Index'].rank(pct=True) * 100
         df = df[df['Score'] >= df['Score'].quantile(self.topn)]
 
-        for i in df['TIC']:
+        for i in tqdm(df['TIC']):
             try:
                 # new_df = yf.download(tickers=i, start=self.start, end=self.end, progress=False)
                 new_df = pd.read_csv('data/'+i+'.csv', index_col=0)
