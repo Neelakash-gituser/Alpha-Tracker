@@ -325,6 +325,8 @@ class MarketScreener:
         else:
             allocation, leftover = da.greedy_portfolio()
 
+        tf = pd.DataFrame(allocation, index=[0])
+        tf.to_excel("Allocations.xlsx", index=False)
 
         return pd.DataFrame(allocation, index=[0]), leftover, pd.DataFrame(weights, index=[0])
 
@@ -345,6 +347,8 @@ class MarketScreener:
         df = df[['TIC', 'Adj Close']].reset_index().set_index(['Date', 'TIC']).unstack()
         df.columns = df.columns.droplevel(0)
         df.columns.name = None
+
+        df.corr().to_excel("Correlation.xlsx")
 
         return df.corr()
 
