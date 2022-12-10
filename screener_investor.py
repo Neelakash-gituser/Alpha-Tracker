@@ -1,4 +1,5 @@
 from hashlib import new
+
 import os
 import talib as ta
 import numpy as np

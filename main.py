@@ -9,35 +9,49 @@ print("\n\n")
 state = True
 
 while state:
-    print("\nEnter your preferred Index Name\n")
-    indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
-    index = indexes[int(input('1.Nifty 50\n2.Bank Nifty\n3.Nasdaq\n4.S&P500\n5.FTSE250\n6.FTSE100\n7.DOW\n8.IBOVESPA\n9.NSE All\n10.NSE Custom\n>>> '))-1]
-    obj = MarketScreener(index)
+    prefer = input("\n1.Stock Screener\n2.Baseline Performance\n3.Individual Stock Details\n4.Asset Allocation\n5.Correlation Check\n6.Exit\n\nOption: ").strip()
 
     # Driver Code
-    screen = input("\nInterested in using screener ? Y/N\n>>> ").upper().strip()
-    if screen == "Y":
+    if prefer == "1":
+        print("\nEnter your preferred Index Name\n")
+
+        indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
+        index = indexes[int(input('1.Nifty 50\n2.Bank Nifty\n3.Nasdaq\n4.S&P500\n5.FTSE250\n6.FTSE100\n7.DOW\n8.IBOVESPA\n9.NSE All\n10.NSE Custom\n>>> '))-1]
+
+        obj = MarketScreener(index)
         dataf = obj._index_stocks_stats()
-        print(dataf)
+        print(dataf.head())
         save = input("\nWant it in an Excel file ? Y/N\n>>> ").strip().upper()
         if save == "Y":
             dataf.to_excel(f"{index}.xlsx", index=False)
 
+
     # Next Baseline
-    base = input("\nInterested to see how the Baseline Index Performed ? Y/N\n>>> ").upper().strip()
-    if base == "Y":
+    if prefer == "2":
+        print("\nEnter your preferred Index Name\n")
+
+        indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
+        index = indexes[int(input('1.Nifty 50\n2.Bank Nifty\n3.Nasdaq\n4.S&P500\n5.FTSE250\n6.FTSE100\n7.DOW\n8.IBOVESPA\n9.NSE All\n10.NSE Custom\n>>> '))-1]
+
+        obj = MarketScreener(index)
         print(obj.get_baseline_stats())
 
+
     # Details Individual Stocks
-    indi_stock = input("\nInterested in checking the details of a particular stock ? Y/N\n>>> ").upper().strip()
-    if indi_stock == "Y":
+    if prefer == "3":
+        print("\nEnter your preferred Index Name\n")
+
+        indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
+        index = indexes[int(input('1.Nifty 50\n2.Bank Nifty\n3.Nasdaq\n4.S&P500\n5.FTSE250\n6.FTSE100\n7.DOW\n8.IBOVESPA\n9.NSE All\n10.NSE Custom\n>>> '))-1]
+
+        obj = MarketScreener(index)
         df = obj.individual_details(input("\nEnter Stock Ticker\n>>> "))
         print("\n")
         print(df)
 
+
     # Asset Allocation
-    asset_allocation = input("\nInterested in Asset Allocation ? Y/N\n>>> ").upper().strip()
-    if asset_allocation == "Y":
+    if prefer == "4":
         cash = input("\nEnter Cash: ").strip()
         if cash.isnumeric():
             cash = int(cash)
@@ -104,8 +118,9 @@ while state:
             print("\n")
             print("Weights of Stocks\n\n", C)
 
-    corr = input("\nInterested in seeing the correlation between stocks ? Y/N\n>>> ").upper().strip()
-    if corr == "Y":
+
+    # Correlation Check
+    if prefer == "5":
         num_stocks_corr = min(int(input("\nEnter the number of unique stocks for portfolio construction (Max. 10): ")), 10)
 
         stock_names_corr = []
@@ -115,6 +130,8 @@ while state:
 
         print("\nThe correlation matrix for the given stocks\n", obj.corr_cals(stock_names_corr))
 
-    contin = input("\nContinue to screen other stock indexes ? Y/N\n>>> ").strip().upper()
-    if contin == "N":
-        state = False
+
+    # Continue to use the screener
+    if prefer == "6":
+        print("Exiting...")
+        break
