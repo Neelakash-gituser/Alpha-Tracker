@@ -25,6 +25,13 @@ while state:
         if save == "Y":
             dataf.to_excel(f"{index}.xlsx", index=False)
 
+        use_filter = True
+        while use_filter:
+            print("\nEnter your screening conditions\n\nNote:\n1.Enter conditions seperated by _. For Eg: Annual Volatility greater than 40% can be written as AV_>_40\n2.SR-Sharpe Ratio\tAV-Annual Volatility\tMDD-Maximum Drawdown\tVaR-Value at Risk\tcVaR-Conditional Value at Risk\tSC-Score\n")
+            filters = input(">>> ").split()
+            
+            use_filter = False
+
 
     # Next Baseline
     if prefer == "2":
@@ -45,7 +52,8 @@ while state:
         index = indexes[int(input('1.Nifty 50\n2.Bank Nifty\n3.Nasdaq\n4.S&P500\n5.FTSE250\n6.FTSE100\n7.DOW\n8.IBOVESPA\n9.NSE All\n10.NSE Custom\n>>> '))-1]
 
         obj = MarketScreener(index)
-        df = obj.individual_details(input("\nEnter Stock Ticker\n>>> "))
+        tick = input("\nEnter Stock Ticker\n>>> ")
+        df = obj.individual_details(tick)
         print("\n")
         print(df)
 

@@ -54,6 +54,7 @@ class MarketScreener:
 
         if index == 'NIFTY_50':
             tickers = sf.tickers_nifty50()
+            tickers = tickers.remove("MM.NS")
             baseline = yf.download(tickers='^NSEI', start=self.start, end=self.end, progress=False)
             self.tickers = tickers
 
@@ -240,7 +241,7 @@ class MarketScreener:
 
 
     # Allocation of various stocks.
-    def asset_allocation(self, cash, ticker_list, opt_method, use_method="ledoit_wolf", alloc="Linear"):
+    def asset_allocation(self, cash, ticker_list, opt_method, use_method="ledoit_wolf", alloc="Linear", freq="M"):
         df = pd.DataFrame()
 
         for i in ticker_list:
@@ -252,12 +253,21 @@ class MarketScreener:
             data['TIC'] = i
             df = df.append(data)
 
+        df.index = pd.to_datetime(df.index)
+        if freq == "M":
+            freq = 22
+            df = df.resample("M").last()
+            df = df.reset_index()
+            df['Date'] = df['Date'].apply(lambda x: x.strftime("%Y-%m-%d"))
+            df.set_index("Date", inplace=True)
+
+        freq = 252
         df = df[['TIC', 'Adj Close']].reset_index().set_index(['Date', 'TIC']).unstack()
         df.columns = df.columns.droplevel(0)
         df.columns.name = None
 
         # Historical returns
-        retu = expected_returns.mean_historical_return(df)
+        retu = expected_returns.mean_historical_return(df, frequency=freq)
 
         returns = retu
         mean_returns = returns
@@ -402,6 +412,13 @@ class MarketScreener:
                     }, index=[0]), ignore_index=True)
 
         fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x = new_df.index,
+            y = new_df['Adj Close'],
+            name = "Actual Price Movement"
+        ))
+
 
         fig.add_trace(go.Scatter(
             x = new_df.index,
