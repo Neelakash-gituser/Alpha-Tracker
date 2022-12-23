@@ -1,5 +1,3 @@
-from hashlib import new
-
 import os
 import talib as ta
 import numpy as np
@@ -26,19 +24,13 @@ from cloudcraftz.statistical_tests import var_historic, cvar_historic
 class MarketScreener:
 
     # Constructor
-    def __init__(self, indexes, lookback=365, top_n=0.01, low=1.3, high=0.75, per=40, pegr=2):
+    def __init__(self, indexes, lookback=365, topn=0.01):
         self.start = dt.datetime.now() - dt.timedelta(days=lookback)
         self.end = dt.datetime.now()
         self.indexes = indexes
-        self.topn = top_n
         self.MA = ['SMA_50', 'SMA_20']
         self.lookback = lookback
-
-        # My Conditions (tweak according to your needs)
-        self.low = low
-        self.high = high
-        self.per = per
-        self.pegr = pegr
+        self.topn = topn
 
         try:
             os.mkdir('./data')
@@ -54,7 +46,7 @@ class MarketScreener:
 
         if index == 'NIFTY_50':
             tickers = sf.tickers_nifty50()
-            tickers = tickers.remove("MM.NS")
+            tickers.remove("MM.NS")
             baseline = yf.download(tickers='^NSEI', start=self.start, end=self.end, progress=False)
             self.tickers = tickers
 
@@ -142,7 +134,7 @@ class MarketScreener:
 
 
     # Info of all stocks in the index
-    def _index_stocks_stats(self, condition=False):
+    def _index_stocks_stats(self):
         return_list = []
         weeks = (self.lookback / 365) * 52
         final_df = pd.DataFrame(columns=['TIC', 'Latest Price', 'Score', 'PE Ratio', 'Dividend', 'SMA_20', 'SMA_50', f'{int(weeks)}_Week_Low',
@@ -187,33 +179,8 @@ class MarketScreener:
                 cvar = cvar_historic(new_df['Adj Close'].pct_change().dropna())
                 var = var_historic(new_df['Adj Close'].pct_change().dropna())
 
-                # Conditions
-                criteria_1 = latest_price > mov_20 > mov_50
-                criteria_2 = latest_price >= (self.low * lows)
-                criteria_3 = latest_price >= (self.high * highs)
-                criteria_4 = pe_ratio < self.per
-                criteria_5 = peg_ratio < self.pegr
-
-                # Screening Criterias
-                if condition:
-                    if criteria_1 and criteria_2 and criteria_3 and criteria_4 and criteria_5:
-                        final_df = final_df.append({
-                            'TIC': i,
-                            'Latest Price': latest_price,
-                            'Score': scores,
-                            'PE Ratio': pe_ratio,
-                            'Dividend': peg_ratio,
-                            'SMA_20': mov_20,
-                            'SMA_50': mov_50,
-                            f'{int(weeks)}_Week_Low': lows,
-                            f'{int(weeks)}_Week_High': highs,
-                            'Annual Volatility': vola,
-                            'Sharpe Ratio': sharpe,
-                            'MaxDD': maxdd,
-                            'CVaR': cvar,
-                            'VaR': var
-                        }, ignore_index=True)
-                else:
+                # Always True
+                if True:
                     final_df = final_df.append({
                          'TIC': i,
                          'Latest Price': latest_price,
@@ -254,24 +221,30 @@ class MarketScreener:
             df = df.append(data)
 
         df.index = pd.to_datetime(df.index)
+        df = df[['TIC', 'Adj Close']].reset_index().set_index(['Date', 'TIC']).unstack()
+        df.columns = df.columns.droplevel(0)
+        df.columns.name = None
+        df_cov = df.copy()
+
         if freq == "M":
-            freq = 22
+            freq = 12
             df = df.resample("M").last()
             df = df.reset_index()
             df['Date'] = df['Date'].apply(lambda x: x.strftime("%Y-%m-%d"))
             df.set_index("Date", inplace=True)
 
-        freq = 252
-        df = df[['TIC', 'Adj Close']].reset_index().set_index(['Date', 'TIC']).unstack()
-        df.columns = df.columns.droplevel(0)
-        df.columns.name = None
+        elif freq == "D":
+            freq = 252
+            df = df.reset_index()
+            df['Date'] = df['Date'].apply(lambda x: x.strftime("%Y-%m-%d"))
+            df.set_index("Date", inplace=True)
 
         # Historical returns
         retu = expected_returns.mean_historical_return(df, frequency=freq)
 
         returns = retu
         mean_returns = returns
-        cov = risk_matrix(df, method=use_method)
+        cov = risk_matrix(df_cov, method=use_method)
         precision_matrix = pd.DataFrame(inv(cov), index=ticker_list, columns=ticker_list)  # Inverse of cov matrix
 
 
@@ -336,10 +309,13 @@ class MarketScreener:
         else:
             allocation, leftover = da.greedy_portfolio()
 
-        tf = pd.DataFrame(allocation, index=[0])
-        tf.to_excel("Allocations.xlsx", index=False)
+        tf = pd.DataFrame(allocation, index=['No. of Shares'])
 
-        return pd.DataFrame(allocation, index=[0]), leftover, pd.DataFrame(weights, index=[0])
+        # Save all information
+        new_final_df = pd.concat([tf.T, pd.DataFrame(weights, index=['Weights']).T], axis=1)
+        new_final_df.to_excel("Allocations.xlsx")
+
+        return new_final_df
 
 
     # Correlation Calculator
