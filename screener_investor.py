@@ -6,7 +6,7 @@ import datetime as dt
 import yfinance as yf
 import plotly.graph_objects as go
 
-from tqdm import tqdm
+from rich.progress import track
 from numpy.linalg import inv
 from pypfopt import risk_models
 from pypfopt import expected_returns
@@ -141,7 +141,7 @@ class MarketScreener:
                                         f'{int(weeks)}_Week_High',
                                         'Annual Volatility', 'Sharpe Ratio', 'MaxDD', 'CVaR', 'VaR'])
 
-        for i in tqdm(self.tickers):
+        for i in track(self.tickers, description='[green]Downloading data'):
             try:
                 data = yf.download(tickers=i, start=self.start, end=self.end, progress=False)
                 data.to_csv('data/'+i+'.csv')
@@ -157,7 +157,7 @@ class MarketScreener:
         df['Score'] = df['Returns Relative to Index'].rank(pct=True) * 100
         df = df[df['Score'] >= df['Score'].quantile(self.topn)]
 
-        for i in tqdm(df['TIC']):
+        for i in track(df['TIC'], description='[green]Processing data'):
             try:
                 # new_df = yf.download(tickers=i, start=self.start, end=self.end, progress=False)
                 new_df = pd.read_csv('data/'+i+'.csv', index_col=0)

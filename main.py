@@ -1,23 +1,41 @@
+from rich import print as rprint
+from rich.console import Console
+from rich.markdown import Markdown
+from rich.terminal_theme import MONOKAI
+from rich.theme import Theme
 from screener_investor import MarketScreener
 
-print("="*150)
-print("WELCOME TRADERS")
-print("="*150)
+# Header
 print("\n\n")
+console = Console()
+
+markdown = Markdown("## WELCOME TRADERS")
+console.print(markdown, style="bold yellow", highlight=True)
+print("\n")
 
 
 state = True
 
 while state:
-    lookback = int(input("\nEnter lookback period (Default is 365 i.e. 1 year): "))
-    prefer = input("\n\n1.Stock Screener\n2.Baseline Performance\n3.Individual Stock Details\n4.Asset Allocation\n5.Correlation Check\n6.Exit\n\nOption: ").strip()
+    # Lookback Period Input
+    mark_lookback = Markdown("\n- Enter lookback period (Default is 365 i.e. 1 year)")
+    console.print(mark_lookback, style="bold yellow")
+    lookback = int(input(' >>> '))
+
+
+    prefer_markdown = Markdown("\n\n1. Stock Screener\n2. Baseline Performance\n3. Individual Stock Details\n4. Asset Allocation\n5. Correlation Check\n6. Exit\n")
+    console.print(prefer_markdown, style="bold magenta")
+    prefer = input(' >>> ')
 
     # Driver Code
     if prefer == "1":
-        print("\nEnter your preferred Index Name\n")
+        index_markdown = Markdown("\n- Enter your preferred Index Name\n\n")
+        console.print(index_markdown, style="bold blue")
 
         indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
-        index = indexes[int(input('1.Nifty 50\n2.Bank Nifty\n3.Nasdaq\n4.S&P500\n5.FTSE250\n6.FTSE100\n7.DOW\n8.IBOVESPA\n9.NSE All\n10.NSE Custom\n\nEnter Option: '))-1]
+        index_option_md = Markdown('1. Nifty 50\n2. Bank Nifty\n3. Nasdaq\n4. S&P500\n5. FTSE250\n6. FTSE100\n7. DOW\n8. IBOVESPA\n9. NSE All\n10. NSE Custom\n')
+        console.print(index_option_md, style="bold green")
+        index = indexes[int(input(' >>> ')) - 1]
 
         obj = MarketScreener(index, lookback=lookback)
         dataf = obj._index_stocks_stats()
