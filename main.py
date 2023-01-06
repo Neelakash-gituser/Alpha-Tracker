@@ -1,8 +1,14 @@
 from rich import print as rprint
+from rich import box
+from rich.prompt import Prompt, Confirm
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.terminal_theme import MONOKAI
 from rich.theme import Theme
+from rich.table import Table
+from utils import df_to_table
+
+import numpy as np
 from screener_investor import MarketScreener
 
 # Header
@@ -18,14 +24,14 @@ state = True
 
 while state:
     # Lookback Period Input
-    mark_lookback = Markdown("\n- Enter lookback period (Default is 365 i.e. 1 year)")
+    mark_lookback = Markdown("\n- Enter lookback period (Default is 365 i.e. 1 year): ")
     console.print(mark_lookback, style="bold yellow")
-    lookback = int(input(' >>> '))
+    lookback = int(Prompt.ask('[bold red] >>> [/bold red]'))
 
 
     prefer_markdown = Markdown("\n\n1. Stock Screener\n2. Baseline Performance\n3. Individual Stock Details\n4. Asset Allocation\n5. Correlation Check\n6. Exit\n")
     console.print(prefer_markdown, style="bold magenta")
-    prefer = input(' >>> ')
+    prefer = str(Prompt.ask('[bold red] >>> [/bold red]'))
 
     # Driver Code
     if prefer == "1":
@@ -35,12 +41,25 @@ while state:
         indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
         index_option_md = Markdown('1. Nifty 50\n2. Bank Nifty\n3. Nasdaq\n4. S&P500\n5. FTSE250\n6. FTSE100\n7. DOW\n8. IBOVESPA\n9. NSE All\n10. NSE Custom\n')
         console.print(index_option_md, style="bold green")
-        index = indexes[int(input(' >>> ')) - 1]
+        index = indexes[int(Prompt.ask('[bold red] >>> [/bold red]')) - 1]
 
         obj = MarketScreener(index, lookback=lookback)
         dataf = obj._index_stocks_stats()
-        print(dataf.head())
-        save = input("\nWant it in an Excel file ? Y/N\n\nEnter Option: ").strip().upper()
+        dataf.set_index('TIC', inplace=True)
+        dataf = dataf.astype('float')
+
+        for cols in dataf.columns:
+            dataf[cols] = dataf[cols].apply(lambda x: np.around(x, 2))
+
+        # Show tables
+        table = Table(show_header=True,  header_style="bold magenta", style="green")
+        table = df_to_table(dataf, table)
+        table.row_styles = ["none", "dim"]
+        table.box = box.ROUNDED
+        console.print(table)
+
+        save = str(Confirm.ask("\n[bold green] Want it in an Excel file[/bold green]")).strip().upper()
+
         if save == "Y":
             dataf.to_excel(f"{index}.xlsx", index=False)
 
@@ -48,8 +67,9 @@ while state:
         temp = dataf.copy()
 
         while use_filter:
-            print("\nEnter your screening conditions\n\nNote:\n1.Enter conditions seperated by _. For Eg: Annual Volatility greater than 40% can be written as AV_>_40\n2.SR-Sharpe Ratio\tAV-Annual Volatility\tMDD-Maximum Drawdown\tVaR-Value at Risk\tcVaR-Conditional Value at Risk\tSC-Score\n")
-            filters = input("\nEnter Option: ").split()
+            filter_mark = Markdown("\n- Enter your screening conditions\n\n- Note:\n1. Enter conditions seperated by _. For Eg: Annual Volatility greater than 40% can be written as AV_>_40\n2. SR-Sharpe Ratio\t- AV-Annual Volatility\t- MDD-Maximum Drawdown\t- VaR-Value at Risk\t- cVaR-Conditional Value at Risk\t- SC-Score\n")
+            console.print(filter_mark, style="bold blue")
+            filters = str(Prompt.ask("\n[bold red] >>> [/bold red]")).split()
 
             for filt in filters:
                 facts = filt.split("_")
@@ -110,7 +130,12 @@ while state:
                     else:
                         temp = temp[temp['Score']==float(facts[2])]
 
-            print(temp)
+            # Show tables
+            table1 = Table(show_header=True,  header_style="bold magenta", style="green")
+            table1 = df_to_table(temp, table1)
+            table1.row_styles = ["none", "dim"]
+            table1.box = box.ROUNDED
+            console.print(table1)
             use_filter = False
 
 
