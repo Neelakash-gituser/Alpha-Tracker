@@ -51,6 +51,8 @@ while state:
         for cols in dataf.columns:
             dataf[cols] = dataf[cols].apply(lambda x: np.around(x, 2))
 
+        dataf = dataf.reset_index()
+
         # Show tables
         table = Table(show_header=True,  header_style="bold magenta", style="green")
         table = df_to_table(dataf, table)
@@ -141,42 +143,67 @@ while state:
 
     # Next Baseline
     if prefer == "2":
-        print("\nEnter your preferred Index Name\n")
+        index_markdown = Markdown("\n- Enter your preferred Index Name\n\n")
+        console.print(index_markdown, style="bold blue")
 
         indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
-        index = indexes[int(input('1.Nifty 50\n2.Bank Nifty\n3.Nasdaq\n4.S&P500\n5.FTSE250\n6.FTSE100\n7.DOW\n8.IBOVESPA\n9.NSE All\n10.NSE Custom\n\nEnter Option: '))-1]
+        index_option_md = Markdown('1. Nifty 50\n2. Bank Nifty\n3. Nasdaq\n4. S&P500\n5. FTSE250\n6. FTSE100\n7. DOW\n8. IBOVESPA\n9. NSE All\n10. NSE Custom\n')
+        console.print(index_option_md, style="bold green")
+        index = indexes[int(Prompt.ask('[bold red] >>> [/bold red]')) - 1]
 
         obj = MarketScreener(index, lookback=lookback)
-        print(obj.get_baseline_stats())
+        dataf = obj.get_baseline_stats()
+
+        for cols in dataf.index[2:]:
+            dataf.loc[cols] = dataf.loc[cols].apply(lambda x: np.around(float(x), 2))
+
+        dataf.reset_index(inplace=True)
+        dataf.rename(columns={'index': 'Metric'}, inplace=True)
+        # Show tables
+        table = Table(show_header=True,  header_style="bold magenta", style="green")
+        table = df_to_table(dataf, table)
+        table.row_styles = ["none", "dim"]
+        table.box = box.ROUNDED
+        console.print(table)
 
 
     # Details Individual Stocks
     if prefer == "3":
-        print("\nEnter your preferred Index Name\n")
+        index_markdown = Markdown("\n- Enter your preferred Index Name\n\n")
+        console.print(index_markdown, style="bold blue")
 
         indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
-        index = indexes[int(input('1.Nifty 50\n2.Bank Nifty\n3.Nasdaq\n4.S&P500\n5.FTSE250\n6.FTSE100\n7.DOW\n8.IBOVESPA\n9.NSE All\n10.NSE Custom\n\nEnter Option: '))-1]
+        index_option_md = Markdown('1. Nifty 50\n2. Bank Nifty\n3. Nasdaq\n4. S&P500\n5. FTSE250\n6. FTSE100\n7. DOW\n8. IBOVESPA\n9. NSE All\n10. NSE Custom\n')
+        console.print(index_option_md, style="bold green")
+        index = indexes[int(Prompt.ask('[bold red] >>> [/bold red]')) - 1]
 
         obj = MarketScreener(index, lookback=lookback)
-        tick = input("\nEnter Stock Ticker\n\nEnter Option: ")
+        print("\n")
+        tick = str(Prompt.ask('[bold green] Enter ticker symbol [/bold green]'))
         df = obj.individual_details(tick)
         print("\n")
-        print(df)
+        for cols in df.columns[1:]:
+            df[cols] = df[cols].apply(lambda x: np.around(float(x), 2))
+
+        # Show tables
+        table = Table(show_header=True,  header_style="bold magenta", style="green")
+        table = df_to_table(df, table)
+        table.row_styles = ["none", "dim"]
+        table.box = box.ROUNDED
+        console.print(table)
 
 
     # Asset Allocation
     if prefer == "4":
-        cash = input("\nEnter Cash: ").strip()
+        cash = (Prompt.ask('\n[bold red] Enter Cash [/bold red]')).strip()
         if cash.isnumeric():
-            cash = int(cash)
-            # Optimisation method check
-            print("\nSelect the desired Optimisation Method \n")
-            print("1. Max Sharpe")
-            print("2. Kelly")
-            print("3. HRP")
-            print("4. Min Vol")
+            cash = float(cash)
 
-            option = input("\nEnter Option: ")
+            # Optimisation method check
+            index_option_md = Markdown('1. Max Sharpe\n2. Kelly\n3. HRP\n4. Min Vol\n')
+            console.print(index_option_md, style="bold blue")
+
+            option = Prompt.ask("\n[bold green] Enter Option [/bold green]").strip()
             if option == "1":
                 method = "max_sharpe"
             elif option == "2":
@@ -190,13 +217,10 @@ while state:
                 print("Enter a valid response")
 
             # Shrinkage Method
-            print("\nSelect the desired Shrinkage Method\n")
-            print("1. Ledoit Wolf")
-            print("2. Semi-Covariance")
-            print("3. Sample Covarinace")
-            print("4. Exp. Covariance")
+            index_option_md = Markdown('1. Ledoit Wolf\n2. Semi Variance\n3. Sample Covariance\n4. Exp. Covariance\n')
+            console.print(index_option_md, style="bold blue")
 
-            option = input("\nEnter Option: ")
+            option = Prompt.ask("\n[bold green] Enter Option [/bold green]").strip()
             if option == "1":
                 shrinkage = "ledoit_wolf"
             elif option == "2":
@@ -209,44 +233,72 @@ while state:
                 print("You have given an invalid response\n")
                 print("Enter a valid response")
 
-            num_stocks = min(int(input("\nEnter the number of unique stocks for portfolio construction (Max. 10): ")), 10)
+            num_stocks = min(int(Prompt.ask("\n[bold cyan] Enter the number of unique stocks for portfolio construction (Max. 10) [/bold cyan]")), 10)
 
             stock_names = []
             for i in range(num_stocks):
-                print(f"\nEnter Symbol No.{i+1} ")
-                stock_names.append(input(">>> ").strip().upper())
+                console.print(f"\n[bold green] Enter Symbol No.{i+1} [/bold green]")
+                stock_names.append(Prompt.ask("[bold red] >>> [/bold red]").strip().upper())
 
-            gre_lin = input("\nEnter G for Greedy Portfolio and L for Linear Portfolio:\n\nEnter Option: ").upper().strip()
+            gre_lin = Prompt.ask("\n[bold magenta] Enter G for Greedy Portfolio and L for Linear Portfolio:\n\n Enter Option [/bold magenta] ").upper().strip()
             print("\n")
             if gre_lin == "G":
                 alloc = "Greedy"
             elif gre_lin == "L":
                 alloc = "Linear"
 
-            print("\nEnter your preferred Index Name\n")
+            index_markdown = Markdown("\n- Enter your preferred Index Name\n\n")
+            console.print(index_markdown, style="bold blue")
 
             indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
-            index = indexes[int(input('1.Nifty 50\n2.Bank Nifty\n3.Nasdaq\n4.S&P500\n5.FTSE250\n6.FTSE100\n7.DOW\n8.IBOVESPA\n9.NSE All\n10.NSE Custom\n\nEnter Option: '))-1]
+            index_option_md = Markdown('1. Nifty 50\n2. Bank Nifty\n3. Nasdaq\n4. S&P500\n5. FTSE250\n6. FTSE100\n7. DOW\n8. IBOVESPA\n9. NSE All\n10. NSE Custom\n')
+            console.print(index_option_md, style="bold green")
+            index = indexes[int(Prompt.ask('[bold red] >>> [/bold red]')) - 1]
 
             obj = MarketScreener(index, lookback=lookback)
-            freq = input('\nEnter Allocation Frequency (M-Monthly, D-Daily): ').upper().strip()
+            freq = Prompt.ask('\n[bold yellow] Enter Allocation Frequency (M-Monthly, D-Daily) [/bold yellow]').upper().strip()
             A = obj.asset_allocation(cash, stock_names, method, shrinkage, alloc, freq)
-            print("\nQuantity of Shares to buy for each ticker\n\n", A)
+            
+            # Show tables
+            table = Table(show_header=True,  header_style="bold magenta", style="green")
+            table = df_to_table(A, table)
+            table.row_styles = ["none", "dim"]
+            table.box = box.ROUNDED
+            console.print(table)
 
 
     # Correlation Check
     if prefer == "5":
-        num_stocks_corr = min(int(input("\nEnter the number of unique stocks for portfolio construction (Max. 10): ")), 10)
+
+        num_stocks_corr = min(int(Prompt.ask("\n[bold cyan] Enter the number of unique stocks for portfolio construction (Max. 10) [/bold cyan]")), 10)
 
         stock_names_corr = []
         for i in range(num_stocks_corr):
-            print(f"\nEnter Symbol No.{i+1} ")
-            stock_names_corr.append(input("\nEnter Option: ").strip().upper())
+            console.print(f"\n[bold green] Enter Symbol No.{i+1} [/bold green]")
+            stock_names_corr.append(Prompt.ask("[bold red] >>> [/bold red]").strip().upper())
 
-        print("\nThe correlation matrix for the given stocks\n", obj.corr_cals(stock_names_corr))
+        index_markdown = Markdown("\n- Enter your preferred Index Name\n\n")
+        console.print(index_markdown, style="bold blue")
+
+        indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE', 'NSE Custom']
+        index_option_md = Markdown('1. Nifty 50\n2. Bank Nifty\n3. Nasdaq\n4. S&P500\n5. FTSE250\n6. FTSE100\n7. DOW\n8. IBOVESPA\n9. NSE All\n10. NSE Custom\n')
+        console.print(index_option_md, style="bold green")
+        index = indexes[int(Prompt.ask('[bold red] >>> [/bold red]')) - 1]
+
+        obj = MarketScreener(index, lookback=lookback)
+        A = obj.corr_cals(stock_names_corr)
+        A = A.astype('float').round(2).reset_index()
+        A.rename(columns={f'{A.columns[0]}': ''}, inplace=True)
+
+        # Show tables
+        table = Table(show_header=True,  header_style="bold magenta", style="green")
+        table = df_to_table(A, table)
+        table.row_styles = ["none", "dim"]
+        table.box = box.ROUNDED
+        console.print(table)
 
 
     # Continue to use the screener
     if prefer == "6":
-        print("Exiting...")
+        console.print("[bold yellow] Exiting... [/bold yellow]")
         break

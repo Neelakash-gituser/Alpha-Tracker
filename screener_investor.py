@@ -14,7 +14,6 @@ from pypfopt import EfficientFrontier
 from pypfopt import objective_functions
 from pypfopt.risk_models import risk_matrix
 from pypfopt.hierarchical_portfolio import HRPOpt
-from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
 from yahoo_fin import stock_info as sf
 from cloudcraftz.utils import drawdown
 from cloudcraftz.statistical_tests import var_historic, cvar_historic
@@ -207,6 +206,26 @@ class MarketScreener:
         return final
 
 
+    # Intermediate Function
+    def backtest(self, cash, backtest_df, weights):
+        amount_allocation = {}
+        shares, balance, total_invested = {}, 0, 0
+        prices = backtest_df
+
+        for keys in backtest_df.keys():
+            amount_allocation[keys] = weights[keys] * cash
+
+        for keys in backtest_df.keys():
+            shares[keys] = (amount_allocation[keys] // prices[keys])
+
+        for keys in backtest_df.keys():
+            total_invested = total_invested + (shares[keys] * prices[keys])
+
+        balance = cash - total_invested
+
+        return total_invested, balance, shares
+
+
     # Allocation of various stocks.
     def asset_allocation(self, cash, ticker_list, opt_method, use_method="ledoit_wolf", alloc="Linear", freq="M"):
         df = pd.DataFrame()
@@ -257,7 +276,7 @@ class MarketScreener:
             weights_sum_to_one=True,
             )
 
-            print(ef.portfolio_performance(verbose=True))
+            er, ev, es = ef.portfolio_performance(verbose=False)
 
             wts = weights
             weights = wts
@@ -270,7 +289,7 @@ class MarketScreener:
             ef.min_volatility()
             wts = ef.clean_weights()
 
-            print(ef.portfolio_performance(verbose=True))
+            er, ev, es = ef.portfolio_performance(verbose=False)
             weights = wts
 
         elif (opt_method.lower()=="kelly"):
@@ -301,18 +320,19 @@ class MarketScreener:
 
 
         # Discrete Allocation
-        latest_prices = get_latest_prices(df)
-        da = DiscreteAllocation(weights, latest_prices, cash)
+        latest_prices = df.loc[df.index[-1]].to_dict()
+        total_invested, balance, shares = self.backtest(cash, latest_prices, weights)
 
-        if alloc == "Linear":
-            allocation, leftover = da.lp_portfolio()
+        if opt_method == "max_sharpe" or opt_method == "min_vol":
+            num_shares = {'Invested': np.around(total_invested, 2), 'Balance': np.around(balance, 2), 'Expected Return': np.around(er, 2), 'Expected Volatility': np.around(ev, 2), 
+                                                                                                                                            'Expected Sharpe Ratio': np.around(es, 2)}
         else:
-            allocation, leftover = da.greedy_portfolio()
+            num_shares = {'Invested': np.around(total_invested, 2), 'Balance': np.around(balance, 2)}
 
-        tf = pd.DataFrame(allocation, index=['No. of Shares'])
+        num_shares.update(shares)
+        new_final_df = pd.DataFrame(num_shares, index=[0])
 
         # Save all information
-        new_final_df = pd.concat([tf.T, pd.DataFrame(weights, index=['Weights']).T], axis=1)
         new_final_df.to_excel("Allocations.xlsx")
 
         return new_final_df
