@@ -1,3 +1,5 @@
+# Import Statements
+
 from rich import print as rprint
 from rich import box
 from rich.prompt import Prompt, Confirm
@@ -6,7 +8,7 @@ from rich.markdown import Markdown
 from rich.terminal_theme import MONOKAI
 from rich.theme import Theme
 from rich.table import Table
-from utils import df_to_table
+from utils import df_to_table, filter_database
 
 import numpy as np
 from screener_investor import MarketScreener
@@ -24,7 +26,7 @@ state = True
 
 while state:
     # Lookback Period Input
-    mark_lookback = Markdown("\n- Enter lookback period (Default is 365 i.e. 1 year): ")
+    mark_lookback = Markdown("\n- Enter lookback period in days(Default is 365 i.e. 1 year): ")
     console.print(mark_lookback, style="bold yellow")
     lookback = int(Prompt.ask('[bold red] >>> [/bold red]'))
 
@@ -73,64 +75,8 @@ while state:
             console.print(filter_mark, style="bold blue")
             filters = str(Prompt.ask("\n[bold red] >>> [/bold red]")).split()
 
-            for filt in filters:
-                facts = filt.split("_")
-                if facts[0]=="AV":
-                    if facts[1]==">":
-                        temp = temp[temp['Annual Volatility']>float(facts[2])]
-                    elif facts[1]=="<":
-                        temp = temp[temp['Annual Volatility']<float(facts[2])]
-                    else:
-                        temp = temp[temp['Annual Volatility']==float(facts[2])]
-                elif facts[0]=="SR":
-                    if facts[1]==">":
-                        temp = temp[temp['Sharpe Ratio']>float(facts[2])]
-                    elif facts[1]=="<":
-                        temp = temp[temp['Sharpe Ratio']<float(facts[2])]
-                    else:
-                        temp = temp[temp['Sharpe Ratio']==float(facts[2])]
-                elif facts[0]=="MDD":
-                    if facts[1]==">":
-                        temp = temp[temp['MaxDD']>float(facts[2])]
-                    elif facts[1]=="<":
-                        temp = temp[temp['MaxDD']<float(facts[2])]
-                    else:
-                        temp = temp[temp['MaxDD']==float(facts[2])]
-                elif facts[0]=="cVaR":
-                    if facts[1]==">":
-                        temp = temp[temp['CVaR']>float(facts[2])]
-                    elif facts[1]=="<":
-                        temp = temp[temp['CVaR']<float(facts[2])]
-                    else:
-                        temp = temp[temp['CVaR']==float(facts[2])]
-                elif facts[0]=="VaR":
-                    if facts[1]==">":
-                        temp = temp[temp['VaR']>float(facts[2])]
-                    elif facts[1]=="<":
-                        temp = temp[temp['VaR']<float(facts[2])]
-                    else:
-                        temp = temp[temp['VaR']==float(facts[2])]
-                elif facts[0]=="PER":
-                    if facts[1]==">":
-                        temp = temp[temp['PE Ratio']>float(facts[2])]
-                    elif facts[1]=="<":
-                        temp = temp[temp['PE Ratio']<float(facts[2])]
-                    else:
-                        temp = temp[temp['PE Ratio']==float(facts[2])]
-                elif facts[0]=="DVD":
-                    if facts[1]==">":
-                        temp = temp[temp['Dividend']>float(facts[2])]
-                    elif facts[1]=="<":
-                        temp = temp[temp['Dividend']<float(facts[2])]
-                    else:
-                        temp = temp[temp['Dividend']==float(facts[2])]
-                else:
-                    if facts[1]==">":
-                        temp = temp[temp['Score']>float(facts[2])]
-                    elif facts[1]=="<":
-                        temp = temp[temp['Score']<float(facts[2])]
-                    else:
-                        temp = temp[temp['Score']==float(facts[2])]
+            # Filters by input
+            temp = filter_database(temp, filters)
 
             # Show tables
             table1 = Table(show_header=True,  header_style="bold magenta", style="green")
