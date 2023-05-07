@@ -31,11 +31,10 @@ class MarketScreener:
         self.lookback = lookback
         self.topn = topn
 
-        try:
-            os.mkdir('./data')
-        except:
-            pass
+        # creates the data directory
+        os.makedirs("data", exist_ok=True)
 
+        # select the index
         self._select_index(self.indexes)
 
 

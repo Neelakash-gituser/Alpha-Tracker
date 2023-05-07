@@ -23,6 +23,7 @@ print("\n")
 
 
 state = True
+load_data = False
 
 while state:
     # Lookback Period Input
@@ -71,7 +72,7 @@ while state:
         temp = dataf.copy()
 
         while use_filter:
-            filter_mark = Markdown("\n- Enter your screening conditions\n\n- Note:\n1. Enter conditions seperated by _. For Eg: Annual Volatility greater than 40% can be written as AV_>_40\n2. SR-Sharpe Ratio\t- AV-Annual Volatility\t- MDD-Maximum Drawdown\t- VaR-Value at Risk\t- cVaR-Conditional Value at Risk\t- SC-Score\n")
+            filter_mark = Markdown("\n- Enter your screening conditions\n\n- Note:\n1. Enter conditions seperated by _. For Eg: Annual Volatility greater than 40% can be written as AV_>_0.4\n2. SR-Sharpe Ratio\t- AV-Annual Volatility\t- MDD-Maximum Drawdown\t- VaR-Value at Risk\t- cVaR-Conditional Value at Risk\t- SC-Score\n")
             console.print(filter_mark, style="bold blue")
             filters = str(Prompt.ask("\n[bold red] >>> [/bold red]")).split()
 
