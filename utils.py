@@ -47,7 +47,7 @@ def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
         facts = filt.split("_")
 
         # check for annual volatility condition
-        if facts[0]=="AV":
+        if facts[0].upper() == "AV":
             if facts[1]==">":
                 temp = temp[temp['Annual Volatility']>float(facts[2])]
             elif facts[1]=="<":
@@ -56,7 +56,7 @@ def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
                 temp = temp[temp['Annual Volatility']==float(facts[2])]
 
         # check for sharpe ratio
-        elif facts[0]=="SR":
+        elif facts[0].upper() == "SR":
             if facts[1]==">":
                 temp = temp[temp['Sharpe Ratio']>float(facts[2])]
             elif facts[1]=="<":
@@ -65,7 +65,7 @@ def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
                 temp = temp[temp['Sharpe Ratio']==float(facts[2])]
 
         # check for max drawdown
-        elif facts[0]=="MDD":
+        elif facts[0].upper() == "MDD":
             if facts[1]==">":
                 temp = temp[temp['MaxDD']>float(facts[2])]
             elif facts[1]=="<":
@@ -74,7 +74,7 @@ def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
                 temp = temp[temp['MaxDD']==float(facts[2])]
 
         # check for conditional VaR
-        elif facts[0]=="cVaR":
+        elif facts[0].upper() == "cVaR":
             if facts[1]==">":
                 temp = temp[temp['CVaR']>float(facts[2])]
             elif facts[1]=="<":
@@ -83,7 +83,7 @@ def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
                 temp = temp[temp['CVaR']==float(facts[2])]
 
         # check for VaR
-        elif facts[0]=="VaR":
+        elif facts[0].upper() == "VaR":
             if facts[1]==">":
                 temp = temp[temp['VaR']>float(facts[2])]
             elif facts[1]=="<":
@@ -92,7 +92,7 @@ def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
                 temp = temp[temp['VaR']==float(facts[2])]
 
         # check for PER
-        elif facts[0]=="PER":
+        elif facts[0].upper() == "PER":
             if facts[1]==">":
                 temp = temp[temp['PE Ratio']>float(facts[2])]
             elif facts[1]=="<":
@@ -101,7 +101,7 @@ def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
                 temp = temp[temp['PE Ratio']==float(facts[2])]
 
         # check for Dividend
-        elif facts[0]=="DVD":
+        elif facts[0].upper() == "DVD":
             if facts[1]==">":
                 temp = temp[temp['Dividend']>float(facts[2])]
             elif facts[1]=="<":
@@ -111,9 +111,9 @@ def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
 
         # check for score
         else:
-            if facts[1]==">":
+            if facts[1] == ">":
                 temp = temp[temp['Score']>float(facts[2])]
-            elif facts[1]=="<":
+            elif facts[1] == "<":
                 temp = temp[temp['Score']<float(facts[2])]
             else:
                 temp = temp[temp['Score']==float(facts[2])]
