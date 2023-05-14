@@ -1,11 +1,13 @@
-from datetime import datetime
-from typing import Optional
-
 import pandas as pd
-from rich import box
-from rich.console import Console
-from rich.table import Table
 
+from rich import box
+from typing import Optional
+from rich.table import Table
+from datetime import datetime
+from rich.console import Console
+
+
+# Dataframe styling 
 def df_to_table(
     pandas_dataframe: pd.DataFrame,
     rich_table: Table,
@@ -37,11 +39,13 @@ def df_to_table(
     return rich_table
 
 
-def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
+# Database filtering and screening
+def filter_database(_temp:pd.DataFrame, filters:list) -> pd.DataFrame:
     """
     Filters Dataframe based on given filtering criteria
     """
-    
+    temp = _temp.copy()
+
     # filtering temp dataframe
     for filt in filters:
         facts = filt.split("_")
@@ -67,20 +71,20 @@ def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
         # check for max drawdown
         elif facts[0].upper() == "MDD":
             if facts[1]==">":
-                temp = temp[temp['MaxDD']>float(facts[2])]
+                temp = temp[temp['Maximum Drawdown']>float(facts[2])]
             elif facts[1]=="<":
-                temp = temp[temp['MaxDD']<float(facts[2])]
+                temp = temp[temp['Maximum Drawdown']<float(facts[2])]
             else:
-                temp = temp[temp['MaxDD']==float(facts[2])]
+                temp = temp[temp['Maximum Drawdown']==float(facts[2])]
 
         # check for conditional VaR
         elif facts[0].upper() == "cVaR":
             if facts[1]==">":
-                temp = temp[temp['CVaR']>float(facts[2])]
+                temp = temp[temp['cVaR']>float(facts[2])]
             elif facts[1]=="<":
-                temp = temp[temp['CVaR']<float(facts[2])]
+                temp = temp[temp['cVaR']<float(facts[2])]
             else:
-                temp = temp[temp['CVaR']==float(facts[2])]
+                temp = temp[temp['cVaR']==float(facts[2])]
 
         # check for VaR
         elif facts[0].upper() == "VaR":
@@ -91,32 +95,42 @@ def filter_database(temp:pd.DataFrame, filters:list) -> pd.DataFrame:
             else:
                 temp = temp[temp['VaR']==float(facts[2])]
 
-        # check for PER
-        elif facts[0].upper() == "PER":
+        # check for Annual Return
+        elif facts[0].upper() == "AR":
             if facts[1]==">":
-                temp = temp[temp['PE Ratio']>float(facts[2])]
+                temp = temp[temp['Annual Return']>float(facts[2])]
             elif facts[1]=="<":
-                temp = temp[temp['PE Ratio']<float(facts[2])]
+                temp = temp[temp['Annual Return']<float(facts[2])]
             else:
-                temp = temp[temp['PE Ratio']==float(facts[2])]
+                temp = temp[temp['Annual Return']==float(facts[2])]
 
-        # check for Dividend
-        elif facts[0].upper() == "DVD":
+        # check for Highest Peak
+        elif facts[0].upper() == "HP":
             if facts[1]==">":
-                temp = temp[temp['Dividend']>float(facts[2])]
+                temp = temp[temp['Highest Peak']>float(facts[2])]
             elif facts[1]=="<":
-                temp = temp[temp['Dividend']<float(facts[2])]
+                temp = temp[temp['Highest Peak']<float(facts[2])]
             else:
-                temp = temp[temp['Dividend']==float(facts[2])]
+                temp = temp[temp['Highest Peak']==float(facts[2])]
 
-        # check for score
-        else:
-            if facts[1] == ">":
-                temp = temp[temp['Score']>float(facts[2])]
-            elif facts[1] == "<":
-                temp = temp[temp['Score']<float(facts[2])]
+        # check for Lowest Trough
+        elif facts[0].upper() == "LT":
+            if facts[1]==">":
+                temp = temp[temp['Lowest Trough']>float(facts[2])]
+            elif facts[1]=="<":
+                temp = temp[temp['Lowest Trough']<float(facts[2])]
             else:
-                temp = temp[temp['Score']==float(facts[2])]
+                temp = temp[temp['Lowest Trough']==float(facts[2])]
+
+        # check for Current Price
+        elif facts[0].upper() == "CP":
+            if facts[1]==">":
+                temp = temp[temp['Current Price']>float(facts[2])]
+            elif facts[1]=="<":
+                temp = temp[temp['Current Price']<float(facts[2])]
+            else:
+                temp = temp[temp['Current Price']==float(facts[2])]
+
 
     return temp
 

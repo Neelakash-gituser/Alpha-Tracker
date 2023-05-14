@@ -1,4 +1,5 @@
 __pycache__/
-data/*.csv
 .ipynb_checkpoints/
 *.cpython
+TestCase.ipynb
+Screenshots/
