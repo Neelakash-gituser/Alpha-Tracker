@@ -1,12 +1,13 @@
 import os
-# import talib as ta
-# import numpy as np
 import pandas as pd
 import datetime as dt
-# import yfinance as yf
-# import plotly.graph_objects as go
+
 
 from rich.progress import track
+from utils.utils import filter_database
+from dataloader.data_loader import Dataloader
+from stats.price_stats import getPricestats
+
 # from numpy.linalg import inv
 # from pypfopt import risk_models
 # from pypfopt import expected_returns
@@ -17,9 +18,6 @@ from rich.progress import track
 # from yahoo_fin import stock_info as sf
 # from financiallib.utils import drawdown
 # from financiallib.statistical_tests import var_historic, cvar_historic
-from utils.utils import filter_database
-from dataloader.data_loader import Dataloader
-from stats.price_stats import getPricestats
 
 
 
@@ -165,3 +163,6 @@ class MarketScreener:
 
     def getAllDetails(self) -> tuple:
         return self._visual_data, self._filter_data
+    
+    def getAllindexdata(self) -> pd.DataFrame:
+        return self._all_stocks

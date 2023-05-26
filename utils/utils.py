@@ -24,12 +24,14 @@ def df_to_table(
     Returns:
         Table: The rich Table instance passed, populated with the DataFrame values."""
 
+    colors, hashKey = ["cyan", "magenta", "green"], 0
+
     if show_index:
         index_name = str(index_name) if index_name else ""
         rich_table.add_column(index_name)
 
     for column in pandas_dataframe.columns:
-        rich_table.add_column(str(column))
+        rich_table.add_column(str(column), justify="right", style=colors[hashKey%len(colors)])
 
     for index, value_list in enumerate(pandas_dataframe.values.tolist()):
         row = [str(index)] if show_index else []
