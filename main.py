@@ -22,16 +22,22 @@ while not Done:
 
     # create the investor
     investor = MarketScreener(indexes=index, lookback=lookback)
-    investor._select_index()
 
     state = True
+    initialised = False
 
     while state:
         # show all options
         option = input("\n1.Baseline Performance\n2.All Stock Performance\n3.Screen Stocks\n\n>>> ")
         frequency = input("\nEnter Frequency of Investing (D/W/M/Y): ").upper()
 
-        functionalities = {"1": investor.get_baseline_stats(frequency)}
+        # initialise everything at beginning once
+        if not initialised:
+            investor._select_index()
+            investor._index_stocks_stats(frequency)
+            initialised = True
+
+        functionalities = {"1": investor.get_baseline_stats(frequency), "2": investor.getAllDetails()[0]}
 
         df = functionalities[option]
 
