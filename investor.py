@@ -2,7 +2,6 @@ import os
 import pandas as pd
 import datetime as dt
 
-
 from rich.progress import track
 from utils.utils import filter_database
 from dataloader.data_loader import Dataloader

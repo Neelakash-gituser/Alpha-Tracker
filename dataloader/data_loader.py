@@ -2,6 +2,7 @@ import pandas as pd
 import yfinance as yf
 
 from yahoo_fin import stock_info as sf
+from utils.utils import check_market, make_ticker_nse
 
 class Dataloader:
 
@@ -30,10 +31,12 @@ class Dataloader:
 
     def load_all_index_tickers(self) -> None:
         # load all tickers inside a given index
-        if eval(self._index_dictionary[self.getIndex()][1]) != None:
-            self._tickers = eval(self._index_dictionary[self.getIndex()][1])
+        if eval(self._index_dictionary[self.getIndex()][1]) != None and check_market(self._index):
+            self._tickers = make_ticker_nse(eval(self._index_dictionary[self.getIndex()][1]))
+        elif eval(self._index_dictionary[self.getIndex()][1]) == None and check_market(self._index):
+            self._tickers = make_ticker_nse(make_ticker_nse(pd.read_csv('datastore/NSE550.csv')['Symbol'].to_list()))
         else:
-            self._tickers = pd.read_csv('datastore/NSE550.csv')['Symbol'].to_list()
+            self._tickers = eval(self._index_dictionary[self.getIndex()][1])
 
     def getIndex(self) -> None:
         return self._index

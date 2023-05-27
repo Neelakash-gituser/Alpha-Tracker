@@ -33,7 +33,7 @@ def df_to_table(
     for column in pandas_dataframe.columns:
         rich_table.add_column(str(column), justify="right", style=colors[hashKey%len(colors)])
 
-    for index, value_list in enumerate(pandas_dataframe.values.tolist()):
+    for index, value_list in zip(pandas_dataframe.index.to_list(), pandas_dataframe.values.tolist()):
         row = [str(index)] if show_index else []
         row += [str(x) for x in value_list]
         rich_table.add_row(*row)
@@ -135,4 +135,18 @@ def filter_database(_temp:pd.DataFrame, filters:list) -> pd.DataFrame:
 
 
     return temp
+
+
+def check_market(index:str) -> bool:
+    """
+    True if Indian Market else False
+    """
+    return index in ['NIFTY_50', 'NIFTY_BANK', 'NSE'] 
+
+
+def make_ticker_nse(tickers:list) -> list:
+    """
+    Returns NSE ticker with .NS in the suffix.
+    """
+    return pd.Series(tickers).apply(lambda x: x + ".NS" if x[-3:]!=".NS" else x).to_list()
 
