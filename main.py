@@ -32,8 +32,8 @@ while not Done:
 
     while state:
         # show all options
-        option = displayString("\n1.Baseline Performance\n2.All Stock Performance\n3.Screen Stocks\n\nEnter Code", style="bold red")
-        frequency = displayString("\nEnter Frequency of Investing (D/W/M/Y)", style="bold red").upper()
+        option = displayString("\n1.Baseline Performance\n2.All Stock Performance\n3.Screen Stocks\n\nEnter Code", style="bold magenta")
+        frequency = displayString("\nEnter Frequency of Investing (D/W/M/Y)", style="bold blue").upper()
 
         # initialise everything at beginning once
         if not initialised:
