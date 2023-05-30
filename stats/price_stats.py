@@ -6,7 +6,7 @@ from financiallib.statistical_tests import var_historic, cvar_historic
 
 
 
-def getPricestats(df:pd.DataFrame, frequency="M", date_col="Date", price_col="Adj Close") -> pd.DataFrame:
+def getPricestats(df:pd.DataFrame, frequency="M", date_col="Date", price_col="Adj Close") -> tuple:
     # Will work on a copy of the sent df
     _df = df.copy()
     

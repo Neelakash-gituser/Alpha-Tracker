@@ -42,16 +42,19 @@ def df_to_table(
 
 
 # Database filtering and screening
-def filter_database(_temp:pd.DataFrame, filters:list) -> pd.DataFrame:
+def filter_database(_temp:pd.DataFrame, filters:list, frequency:str="M") -> pd.DataFrame:
     """
     Filters Dataframe based on given filtering criteria
     """
     temp = _temp.copy()
 
+    # Mapper
+    mapper = {"D":"Day", "M":"Month", "W":"Week", "Q":"Quarter", "Y":"Year"}
+
     # filtering temp dataframe
     for filt in filters:
         facts = filt.split("_")
-
+        
         # check for annual volatility condition
         if facts[0].upper() == "AV":
             if facts[1]==">":
@@ -80,7 +83,7 @@ def filter_database(_temp:pd.DataFrame, filters:list) -> pd.DataFrame:
                 temp = temp[temp['Maximum Drawdown']==float(facts[2])]
 
         # check for conditional VaR
-        elif facts[0].upper() == "cVaR":
+        elif facts[0].upper() == "CVAR":
             if facts[1]==">":
                 temp = temp[temp['cVaR']>float(facts[2])]
             elif facts[1]=="<":
@@ -89,7 +92,7 @@ def filter_database(_temp:pd.DataFrame, filters:list) -> pd.DataFrame:
                 temp = temp[temp['cVaR']==float(facts[2])]
 
         # check for VaR
-        elif facts[0].upper() == "VaR":
+        elif facts[0].upper() == "VAR":
             if facts[1]==">":
                 temp = temp[temp['VaR']>float(facts[2])]
             elif facts[1]=="<":
@@ -132,6 +135,15 @@ def filter_database(_temp:pd.DataFrame, filters:list) -> pd.DataFrame:
                 temp = temp[temp['Current Price']<float(facts[2])]
             else:
                 temp = temp[temp['Current Price']==float(facts[2])]
+        
+        # check for 1 Period Change
+        elif facts[0].upper() == "1PC":
+            if facts[1]==">":
+                temp = temp[temp[f'1 {mapper[frequency]} Change (%)']>float(facts[2])]
+            elif facts[1]=="<":
+                temp = temp[temp[f'1 {mapper[frequency]} Change (%)']<float(facts[2])]
+            else:
+                temp = temp[temp[f'1 {mapper[frequency]} Change (%)']==float(facts[2])]
 
 
     return temp

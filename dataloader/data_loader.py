@@ -21,7 +21,7 @@ class Dataloader:
         self._all_data = pd.DataFrame()
         for equity in self._tickers:
             if equity != "MM.NS":
-                data = yf.download(equity, start=self._start_date, end=self._end_date, progress=False)
+                data = yf.download(equity, start=self._start_date, end=self._end_date, progress=False, show_errors=False)
                 data['TIC'] = equity
                 self._all_data = self._all_data.append(data)
 

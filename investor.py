@@ -113,9 +113,10 @@ class MarketScreener:
                                 round(cvar*100, 2),
                                 round(ret_1_ch*100, 2),
                                 round(high, 2),
-                                round(low, 2)
+                                round(low, 2),
+                                round(current_price, 2)
                                 ], index=['Start Date', 'End Date', f'Period (in {tracker[frequency]})', 'Annual Return', 'Annual Volatility', 'Sharpe Ratio', 
-                                        'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough'], columns=[f'{tick}'])
+                                        'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price'], columns=[f'{tick}'])
                     
                     self._visual_data = self._visual_data.append(df.T)
                     self._filter_data = self._filter_data.append(newDf.T)
@@ -123,7 +124,6 @@ class MarketScreener:
                     pass
         except:
             pass
-
 
 
     # More info on individual stocks
@@ -157,8 +157,8 @@ class MarketScreener:
     
 
 
-    def filterDatabase(self, filters) -> pd.DataFrame:
-        return filter_database(self._filter_data, filters=filters)
+    def filterDatabase(self, filters:list, frequency:str) -> pd.DataFrame:
+        return filter_database(self._filter_data, filters=filters, frequency=frequency)
 
     def getAllDetails(self) -> tuple:
         return self._visual_data, self._filter_data
