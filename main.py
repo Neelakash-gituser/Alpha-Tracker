@@ -35,7 +35,7 @@ while not Done:
 
     while state:
         # show all options
-        option = displayString("\n1.Baseline Performance\n2.All Stock Performance\n3.Screen Stocks\n\nEnter Code", style="bold magenta")
+        option = displayString("\n1. Baseline Performance\n2. All Stock Performance\n3. Screen Stocks\n4. Asset Allocation\n\nEnter Code", style="bold magenta")
         frequency = displayString("\n\nEnter Frequency of Investing (D/W/M/Y)", style="bold blue").upper()
 
         # initialise everything at beginning once
@@ -46,8 +46,9 @@ while not Done:
 
         # functions
         functionalities = {"1": investor.get_baseline_stats(frequency), "2": investor.getAllDetails()[0]}
+        exclude_list = ["3"]
 
-        if option != "3":
+        if option not in exclude_list:
             df = functionalities[option]
             displayDf(df)
         elif option == "3":

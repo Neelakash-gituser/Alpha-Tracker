@@ -6,14 +6,8 @@ from rich.progress import track
 from utils.utils import filter_database
 from dataloader.data_loader import Dataloader
 from stats.price_stats import getPricestats
+from portfolio_allocation.allocator import asset_allocation
 
-# from numpy.linalg import inv
-# from pypfopt import risk_models
-# from pypfopt import expected_returns
-# from pypfopt import EfficientFrontier
-# from pypfopt import objective_functions
-# from pypfopt.risk_models import risk_matrix
-# from pypfopt.hierarchical_portfolio import HRPOpt
 # from yahoo_fin import stock_info as sf
 # from financiallib.utils import drawdown
 # from financiallib.statistical_tests import var_historic, cvar_historic
@@ -156,6 +150,9 @@ class MarketScreener:
                                        'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price'], columns=['Summary'])
     
 
+    def assetAllocation(self, cash:float, opt_method:str, use_method:str, frequency:str) -> pd.DataFrame:
+        price_data = self._data_loader.getAllindexdata()
+        print(price_data)
 
     def filterDatabase(self, filters:list, frequency:str) -> pd.DataFrame:
         return filter_database(self._filter_data, filters=filters, frequency=frequency)

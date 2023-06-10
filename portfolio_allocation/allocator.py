@@ -1,110 +1,97 @@
-# # Allocation of various stocks.
-# def asset_allocation(self, cash, ticker_list, opt_method, use_method="ledoit_wolf", alloc="Linear", freq="M"):
-#     df = pd.DataFrame()
+# Imports
+import pandas as pd
+import numpy as np
 
-#     for i in ticker_list:
-#         try:
-#             data = pd.read_csv('data/'+i+'.csv', index_col=0)
-#         except:
-#             data = yf.download(i, start=self.start, end=self.end, progress=False)
-
-#         data['TIC'] = i
-#         df = df.append(data)
-
-#     df.index = pd.to_datetime(df.index)
-#     df = df[['TIC', 'Adj Close']].reset_index().set_index(['Date', 'TIC']).unstack()
-#     df.columns = df.columns.droplevel(0)
-#     df.columns.name = None
-#     df_cov = df.copy()
-
-#     if freq == "M":
-#         freq = 12
-#         df = df.resample("M").last()
-#         df = df.reset_index()
-#         df['Date'] = df['Date'].apply(lambda x: x.strftime("%Y-%m-%d"))
-#         df.set_index("Date", inplace=True)
-
-#     elif freq == "D":
-#         freq = 252
-#         df = df.reset_index()
-#         df['Date'] = df['Date'].apply(lambda x: x.strftime("%Y-%m-%d"))
-#         df.set_index("Date", inplace=True)
-
-#     # Historical returns
-#     retu = expected_returns.mean_historical_return(df, frequency=freq)
-
-#     returns = retu
-#     mean_returns = returns
-#     cov = risk_matrix(df_cov, method=use_method)
-#     precision_matrix = pd.DataFrame(inv(cov), index=ticker_list, columns=ticker_list)  # Inverse of cov matrix
+from backtest.backtest import backtestCalculator
+from numpy.linalg import inv
+from pypfopt import risk_models
+from pypfopt import expected_returns
+from pypfopt import EfficientFrontier
+from pypfopt import objective_functions
+from pypfopt.risk_models import risk_matrix
+from pypfopt.hierarchical_portfolio import HRPOpt
 
 
-#     if (opt_method.lower()=="max_sharpe"):
+# Allocation of various stocks.
+def asset_allocation(cash:float, df:pd.DataFrame, opt_method:str, frequency:str, use_method:str="ledoit_wolf") -> pd.DataFrame:
 
-#         ef = EfficientFrontier(retu, cov)
-#         weights = ef.nonconvex_objective(
-#         objective_functions.sharpe_ratio,
-#         objective_args = (ef.expected_returns, ef.cov_matrix),
-#         weights_sum_to_one=True,
-#         )
+    # unique securities
+    ticker_list = list(df.columns)
 
-#         er, ev, es = ef.portfolio_performance(verbose=False)
+    df_cov = df.copy()
+    mapper = {"D": 252, "M": 12, "W":52, "Q": 4, "Y": 1}
+    freq = mapper[frequency]
 
-#         wts = weights
-#         weights = wts
+    # convert datetime to string index
+    df = df.reset_index()
+    df['Date'] = df['Date'].apply(lambda x: x.strftime("%Y-%m-%d"))
+    df.set_index("Date", inplace=True)
 
-#     elif (opt_method.lower()=="min_vol"):
+    # Historical returns
+    retu = expected_returns.mean_historical_return(df, frequency=freq)
 
-#         ef = EfficientFrontier(retu, cov, verbose=False)
-#         ef.add_objective(objective_functions.L2_reg, gamma=1)
+    returns = retu
+    mean_returns = returns
+    cov = risk_matrix(df_cov, method=use_method)
+    precision_matrix = pd.DataFrame(inv(cov), index=ticker_list, columns=ticker_list)  # Inverse of cov matrix
 
-#         ef.min_volatility()
-#         wts = ef.clean_weights()
+    # Optimisation Techniques
+    if (opt_method.lower()=="max_sharpe"):
 
-#         er, ev, es = ef.portfolio_performance(verbose=False)
-#         weights = wts
+        ef = EfficientFrontier(retu, cov)
+        weights = ef.nonconvex_objective(
+            objective_functions.sharpe_ratio,
+            objective_args = (ef.expected_returns, ef.cov_matrix),
+            weights_sum_to_one=True,
+        )
+        er, ev, es = ef.portfolio_performance(verbose=False)
+        wts = weights
+        weights = wts
 
-#     elif (opt_method.lower()=="kelly"):
+    elif (opt_method.lower()=="min_vol"):
 
-#         kelly_wt = precision_matrix.dot(mean_returns).clip(lower=0).values
-#         kelly_wt /= np.sum(np.abs(kelly_wt))
-#         wts = dict(zip(ticker_list, kelly_wt))
+        ef = EfficientFrontier(retu, cov, verbose=False)
+        ef.add_objective(objective_functions.L2_reg, gamma=1)
+        ef.min_volatility()
+        wts = ef.clean_weights()
+        er, ev, es = ef.portfolio_performance(verbose=False)
+        weights = wts
 
-#         weights = wts
+    elif (opt_method.lower()=="kelly"):
 
-#     elif (opt_method.upper()=="HRP"):
+        kelly_wt = precision_matrix.dot(mean_returns).clip(lower=0).values
+        kelly_wt /= np.sum(np.abs(kelly_wt))
+        wts = dict(zip(ticker_list, kelly_wt))
+        weights = wts
 
-#         returns = df.pct_change().dropna()
-#         hrp = HRPOpt(returns)
-#         wts = hrp.optimize()
-#         wts = hrp.clean_weights()
+    elif (opt_method.upper()=="HRP"):
 
-#         weights = wts
+        returns = df.pct_change().dropna()
+        hrp = HRPOpt(returns)
+        wts = hrp.optimize()
+        wts = hrp.clean_weights()
+        weights = wts
 
-#     elif (opt_method.upper()=="EQ"):
+    elif (opt_method.upper()=="EQ"):
 
-#         wts = {s:1/len(ticker_list) for s in ticker_list}
+        wts = {s:1/len(ticker_list) for s in ticker_list}
+        weights = wts
 
-#         weights = wts
-
-#     else:
-#         print("Warning: Invalid optimisation method")
+    else:
+        print("Warning: Invalid optimisation method")
 
 
-#     # Discrete Allocation
-#     latest_prices = df.loc[df.index[-1]].to_dict()
-#     total_invested, balance, shares = self.backtest(cash, latest_prices, weights)
+    # Discrete Allocation
+    latest_prices = df.loc[df.index[-1]].to_dict()
+    total_invested, balance, shares = backtestCalculator(cash, latest_prices, weights)
 
-#     if opt_method == "max_sharpe" or opt_method == "min_vol":
-#         num_shares = {'Invested': np.around(total_invested, 2), 'Balance': np.around(balance, 2), 'Expected Return': np.around(er, 2), 'Expected Volatility': np.around(ev, 2),
-#                                                                                                                                         'Expected Sharpe Ratio': np.around(es, 2)}
-#     else:
-#         num_shares = {'Invested': np.around(total_invested, 2), 'Balance': np.around(balance, 2)}
+    if opt_method == "max_sharpe" or opt_method == "min_vol":
+        num_shares = {'Invested': np.around(total_invested, 2), 'Balance': np.around(balance, 2), 'Expected Return': np.around(er, 2), 'Expected Volatility': np.around(ev, 2),
+                                                                                                                                        'Expected Sharpe Ratio': np.around(es, 2)}
+    else:
+        num_shares = {'Invested': np.around(total_invested, 2), 'Balance': np.around(balance, 2)}
 
-#     num_shares.update(shares)
-#     new_final_df = pd.DataFrame(num_shares, index=[0])
+    num_shares.update(shares)
+    new_final_df = pd.DataFrame(num_shares, index=[0])
 
-#     # Save all information
-#     new_final_df.to_excel("Allocations.xlsx")
-
-#     return new_final_df
+    return new_final_df

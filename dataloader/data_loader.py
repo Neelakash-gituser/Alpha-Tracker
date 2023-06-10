@@ -27,7 +27,7 @@ class Dataloader:
 
     def load_baseline(self) -> None:
         # loading the baseline data
-        self._baseline = yf.download(tickers=self._index_dictionary[self.getIndex()][0], start=self._start_date, end=self._end_date, progress=False)
+        self._baseline = yf.download(tickers=self._index_dictionary[self.getIndex()][0], start=self._start_date, end=self._end_date, progress=False, show_errors=False)
 
     def load_all_index_tickers(self) -> None:
         # load all tickers inside a given index
