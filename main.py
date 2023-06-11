@@ -46,11 +46,12 @@ while not Done:
 
         # functions
         functionalities = {"1": investor.get_baseline_stats(frequency), "2": investor.getAllDetails()[0]}
-        exclude_list = ["3"]
+        exclude_list = ["3", "4"]
 
         if option not in exclude_list:
             df = functionalities[option]
             displayDf(df)
+
         elif option == "3":
             filters = displayString(f"\n\nEnter filtering criteria for screening {index} stocks\n\nNote: Enter all screening criteria as AV_<_30 (This means show all stocks with annual volatility less than 30%) \
                                     \n\n1. 1PC (1 Period Change)\n2. AR (Annual Return) \
@@ -61,6 +62,21 @@ while not Done:
             # screen stocks
             df = investor.filterDatabase(filters, frequency)
             displayDf(df)
+
+        elif option == "4":
+            # method mappers
+            opt_method_dict = {"1":"max_sharpe", "2":"min_vol", "3":"kelly", "4": "HRP"}
+            use_method_dict = {"1":"ledoit_wolf", "2":"semicovariance", "3":"sample_cov", "4": "exp_cov"}
+
+            cash = float(displayString("\nEnter Cash Amount", style="bold yellow"))
+            opt_method = opt_method_dict[displayString("\n1. Max Sharpe\n2. Min Vol\n3. Kelly\n4. HRP\n\nEnter Code", style="bold magenta")]
+            use_method = use_method_dict[displayString("\n1. Ledoit Wolf\n2. Semi-Covariance\n3. Sample Covariance\n4. Exponential Covariance\n\nEnter Code", style="bold green")]
+            stock_list = displayString("\nEnter Stock Tickers\nEnter Code", style="bold magenta").upper().split()
+            
+            # call method
+            dataFrame = investor.assetAllocation(cash=cash, opt_method=opt_method, use_method=use_method, frequency=frequency, value_col="Adj Close", stock_list=stock_list)
+
+            displayDf(dataFrame)
         
         state = manager[displayString("\nKeep exploring the same index ? [y/n]", style="bold green").lower()]
 

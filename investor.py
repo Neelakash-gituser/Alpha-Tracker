@@ -150,9 +150,22 @@ class MarketScreener:
                                        'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price'], columns=['Summary'])
     
 
-    def assetAllocation(self, cash:float, opt_method:str, use_method:str, frequency:str) -> pd.DataFrame:
-        price_data = self._data_loader.getAllindexdata()
-        print(price_data)
+    def assetAllocation(self, cash:float, opt_method:str, use_method:str, frequency:str, value_col:str, stock_list:list) -> pd.DataFrame:
+        # price data
+        price_data = self._data_loader.getAllindexdata()[[value_col, 'TIC']].reset_index().set_index(['Date', 'TIC']).unstack()
+        price_data.columns = price_data.columns.droplevel()
+        price_data.columns.name = None
+
+        # take only mentioned tickers
+        price_data = price_data[stock_list]
+
+        # resample to frequency
+        price_data = self._data_loader.resample_df(price_data, frequency=frequency)
+        
+        # get the allocations
+        allocations = asset_allocation(cash=cash, df=price_data, opt_method=opt_method, frequency=frequency, use_method=use_method)
+
+        return allocations
 
     def filterDatabase(self, filters:list, frequency:str) -> pd.DataFrame:
         return filter_database(self._filter_data, filters=filters, frequency=frequency)

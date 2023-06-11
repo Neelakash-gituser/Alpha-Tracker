@@ -86,8 +86,9 @@ def asset_allocation(cash:float, df:pd.DataFrame, opt_method:str, frequency:str,
     total_invested, balance, shares = backtestCalculator(cash, latest_prices, weights)
 
     if opt_method == "max_sharpe" or opt_method == "min_vol":
-        num_shares = {'Invested': np.around(total_invested, 2), 'Balance': np.around(balance, 2), 'Expected Return': np.around(er, 2), 'Expected Volatility': np.around(ev, 2),
-                                                                                                                                        'Expected Sharpe Ratio': np.around(es, 2)}
+        num_shares = {'Invested (₹)': np.around(total_invested, 2), 'Balance (₹)': np.around(balance, 2), 'Expected Return (%)': f'{np.around(er, 2)*100}%', 
+                                                                                                            'Expected Volatility (%)': f'{np.around(ev, 2)*100}%',
+                                                                                                            'Expected Sharpe Ratio': np.around(es, 2)}
     else:
         num_shares = {'Invested': np.around(total_invested, 2), 'Balance': np.around(balance, 2)}
 
