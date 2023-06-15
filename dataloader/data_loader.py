@@ -16,6 +16,11 @@ class Dataloader:
                                   'NASDAQ':('^IXIC', 'sf.tickers_nasdaq()'), 'SP500':('^GSPC', 'sf.tickers_sp500()'), 'FTSE250':('^FTMC', 'sf.tickers_ftse250()'),
                                   'FTSE100':('^FTSE', 'sf.tickers_ftse100()'), 'DOW':('^DJI', 'sf.tickers_dow()'), 'IBOVESPA':('^BVSP', 'sf.tickers_ibovespa()'),
                                   'NSE':('^NSEI', 'None')}
+        
+        
+    def load_single_instrument(self, stock_name) -> pd.DataFrame:
+        data = yf.download(stock_name, start=self._start_date, end=self._end_date, progress=False, show_errors=False)
+        return data
 
     def load_data(self) -> None:
         self._all_data = pd.DataFrame()
