@@ -2,4 +2,4 @@ __pycache__/
 .ipynb_checkpoints/
 *.cpython
 TestCase.ipynb
-Screenshots/
+screenshots/
