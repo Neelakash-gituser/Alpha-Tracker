@@ -121,9 +121,31 @@ class MarketScreener:
 
 
     # More info on individual stocks
-    def individual_details(self, stock_name):
-        pass
-
+    def individual_details(self, stock_name, frequency):
+        # Fetch Data and take details
+        data = self._data_loader.resampler(df=self._data_loader.load_single_instrument(stock_name=stock_name), dataType="securities", frequency=frequency)
+        startDate, endDate, no_of_periods, frequency, annual_ret, annual_vol, sharpe, max_drawdown, var, cvar, ret_1_ch, high, low, current_price = getPricestats(df=data.reset_index(), 
+                                                                                                                                                                  frequency=frequency)
+        # Mapper                                                                                                                                                    
+        tracker = {"D":"Days", "M":"Months", "W":"Weeks", "Q":"Quarters", "Y":"Years"}
+        df = pd.DataFrame([
+                                startDate.strftime("%Y-%m-%d"),
+                                endDate.strftime("%Y-%m-%d"),
+                                round(no_of_periods),
+                                f'{round(annual_ret*100, 2)}%',
+                                f'{round(annual_vol*100, 2)}%',
+                                f'{round(sharpe, 2)}',
+                                f'{round(max_drawdown*100, 2)}%',
+                                f'{round(var*100, 2)}%',
+                                f'{round(cvar*100, 2)}%',
+                                f'{round(ret_1_ch*100, 2)}%',
+                                f'{self._currency} {round(high, 2)}',
+                                f'{self._currency} {round(low, 2)}',
+                                f'{self._currency} {round(current_price, 2)}'
+                                ], index=['Start Date', 'End Date', f'Period (in {tracker[frequency]})', 'Annual Return', 'Annual Volatility', 'Sharpe Ratio', 
+                                        'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price'], columns=[f'{stock_name}'])
+        
+        return df.T
 
 
     # Just a function to aggregate our results.

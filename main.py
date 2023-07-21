@@ -46,7 +46,7 @@ while not Done:
 
         # functions
         functionalities = {"1": investor.get_baseline_stats(frequency), "2": investor.getAllDetails()[0]}
-        exclude_list = ["3", "4"]
+        exclude_list = ["3", "4", "5"]
 
         if option not in exclude_list:
             df = functionalities[option]
@@ -71,12 +71,18 @@ while not Done:
             cash = float(displayString("\nEnter Cash Amount", style="bold yellow"))
             opt_method = opt_method_dict[displayString("\n1. Max Sharpe\n2. Min Vol\n3. Kelly\n4. HRP\n\nEnter Code", style="bold magenta")]
             use_method = use_method_dict[displayString("\n1. Ledoit Wolf\n2. Semi-Covariance\n3. Sample Covariance\n4. Exponential Covariance\n\nEnter Code", style="bold green")]
-            stock_list = displayString("\nEnter Stock Tickers\nEnter Code", style="bold magenta").upper().split()
+            stock_list = displayString("\nEnter Stock Tickers\nEnter Ticker Names", style="bold magenta").upper().split()
             
             # call method
             dataFrame = investor.assetAllocation(cash=cash, opt_method=opt_method, use_method=use_method, frequency=frequency, value_col="Adj Close", stock_list=stock_list)
 
             displayDf(dataFrame)
+        
+        elif option == "5":
+            # Single stock Analysis Details
+            singleAsset = displayString("\nEnter Stock Ticker", style="bold magenta").upper()
+            singleAssetData = investor.individual_details(singleAsset, frequency=frequency)
+            displayDf(singleAssetData)
         
         state = manager[displayString("\nKeep exploring the same index ? [y/n]", style="bold green").lower()]
 
