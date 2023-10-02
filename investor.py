@@ -8,11 +8,6 @@ from dataloader.data_loader import Dataloader
 from stats.price_stats import getPricestats
 from portfolio_allocation.allocator import asset_allocation
 
-# from yahoo_fin import stock_info as sf
-# from financiallib.utils import drawdown
-# from financiallib.statistical_tests import var_historic, cvar_historic
-
-
 
 class MarketScreener:
 
@@ -112,8 +107,8 @@ class MarketScreener:
                                 ], index=['Start Date', 'End Date', f'Period (in {tracker[frequency]})', 'Annual Return', 'Annual Volatility', 'Sharpe Ratio', 
                                         'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price'], columns=[f'{tick}'])
                     
-                    self._visual_data = self._visual_data.append(df.T)
-                    self._filter_data = self._filter_data.append(newDf.T)
+                    self._visual_data = pd.concat([self._visual_data, df.T])
+                    self._filter_data = pd.concat([self._filter_data, newDf.T])
                 except:
                     pass
         except:
