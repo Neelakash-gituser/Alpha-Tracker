@@ -55,7 +55,7 @@ while not Done:
         elif option == "3":
             filters = displayString(f"\n\nEnter filtering criteria for screening {index} stocks\n\nNote: Enter all screening criteria as AV_<_30 (This means show all stocks with annual volatility less than 30%) \
                                     \n\n1. 1PC (1 Period Change)\n2. AR (Annual Return) \
-                                    \n3. SR (Sharpe Ratio)\n4. MDD (Max Drawdown)\n5. VaR\n6. cVaR\n7. HP (Highest Peak)\n8. LT (Lowest Trough)\n9. CP (Current Price)\n10. AV (Annual Volatility)\n\nEnter Conditions", 
+                                    \n3. SR (Sharpe Ratio)\n4. MDD (Max Drawdown)\n5. VaR\n6. cVaR\n7. HP (Highest Peak)\n8. LT (Lowest Trough)\n9. CP (Current Price)\n10.AV (Annual Volatility)\n\nEnter Conditions", 
                                      
                                     style="bold blue").split()
             
@@ -83,6 +83,12 @@ while not Done:
             singleAsset = displayString("\nEnter Stock Ticker", style="bold magenta").upper()
             singleAssetData = investor.individual_details(singleAsset, frequency=frequency)
             displayDf(singleAssetData)
+
+        elif option == "6":
+            # correlation matrix 
+            stock_list = displayString("\nEnter Stock Tickers\nEnter Ticker Names", style="bold magenta").upper().split()
+            corr_df = investor.correlation_matrix(stock_list=stock_list, frequency=frequency, value_col="Adj Close")
+            displayDf(corr_df)
         
         state = manager[displayString("\nKeep exploring the same index ? [y/n]", style="bold green").lower()]
 

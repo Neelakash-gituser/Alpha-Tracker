@@ -3,3 +3,4 @@ __pycache__/
 *.cpython
 TestCase.ipynb
 screenshots/
+*.log

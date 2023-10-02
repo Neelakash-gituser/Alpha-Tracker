@@ -5,7 +5,7 @@ import datetime as dt
 from rich.progress import track
 from utils.utils import filter_database
 from dataloader.data_loader import Dataloader
-from stats.price_stats import getPricestats
+from stats.price_stats import getPricestats, corr_cals
 from portfolio_allocation.allocator import asset_allocation
 
 
@@ -183,6 +183,20 @@ class MarketScreener:
         allocations = asset_allocation(cash=cash, df=price_data, opt_method=opt_method, frequency=frequency, use_method=use_method)
 
         return allocations
+    
+    def correlation_matrix(self, stock_list:list, frequency:str, value_col:str) -> pd.DataFrame:
+        # correlation matrix
+        price_data = self._data_loader.getAllindexdata()[[value_col, 'TIC']].reset_index().set_index(['Date', 'TIC']).unstack()
+        price_data.columns = price_data.columns.droplevel()
+        price_data.columns.name = None
+
+        # take only mentioned tickers
+        price_data = price_data[stock_list]
+
+        # resample to frequency
+        price_data = self._data_loader.resample_df(price_data, frequency=frequency)
+        corr_df = corr_cals(price_data, stock_list)
+        return corr_df
 
     def filterDatabase(self, filters:list, frequency:str) -> pd.DataFrame:
         return filter_database(self._filter_data, filters=filters, frequency=frequency)
