@@ -87,7 +87,7 @@ def getPricestats(df:pd.DataFrame, frequency="M", date_col="Date", price_col="Ad
 
 
 # Correlation Calculator
-def corr_cals(_df:pd.DataFrame, ticker_list:list) -> pd.DataFrame:
+def corr_cals(_df:pd.DataFrame) -> pd.DataFrame:
     """
     Calculate the correlation matrix between a list of ticker symbols based on adjusted close prices.
 
@@ -97,29 +97,13 @@ def corr_cals(_df:pd.DataFrame, ticker_list:list) -> pd.DataFrame:
     :param _df: The DataFrame containing historical price data.
     :type _df: pd.DataFrame
 
-    :param ticker_list: A list of ticker symbols to calculate correlations for.
-    :type ticker_list: list
-
     :return: A Pandas DataFrame representing the correlation matrix between the ticker symbols.
     :rtype: pd.DataFrame
     """
     try:
-        df = pd.DataFrame()
-
-        for i in ticker_list:
-            try:
-                data = _df[_df['TIC']==i][['Adj Close', 'TIC']]
-            except:
-                pass
-
-            df = pd.concat([df, data])
-
-        df = df[['TIC', 'Adj Close']].reset_index().set_index(['Date', 'TIC']).unstack()
-        df.columns = df.columns.droplevel(0)
-        df.columns.name = None
-        df = df.round(2)
-
-        return df.corr()
+        _df = _df.pct_change()
+        return _df.corr().round(2)
+    
     except Exception as e:
         logger_stats.info(f"problem {e} in corr_cals() at line no.={get_exception_line_no()}")
 

@@ -192,10 +192,10 @@ class MarketScreener:
 
         # take only mentioned tickers
         price_data = price_data[stock_list]
-
+        
         # resample to frequency
         price_data = self._data_loader.resample_df(price_data, frequency=frequency)
-        corr_df = corr_cals(price_data, stock_list)
+        corr_df = corr_cals(price_data)
         return corr_df
 
     def filterDatabase(self, filters:list, frequency:str) -> pd.DataFrame:
