@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import pandas as pd
 import yfinance as yf
 import logging as log
@@ -70,7 +73,7 @@ class Dataloader:
             >>> data = load_single_instrument('AAPL')
         """
         try:
-            data = yf.download(stock_name, start=self._start_date, end=self._end_date, progress=False)
+            data = yf.download(stock_name, start=self._start_date, end=self._end_date, progress=False, show_errors=False)
             return data
         except Exception as e:
             logger_data.info(f"problem {e} in load_single_instrument() at line no.={get_exception_line_no()}")
@@ -108,7 +111,7 @@ class Dataloader:
             self._all_data = pd.DataFrame()
             for equity in self._tickers:
                 if equity != "MM.NS":
-                    data = yf.download(equity, start=self._start_date, end=self._end_date, progress=False)
+                    data = yf.download(equity, start=self._start_date, end=self._end_date, progress=False, show_errors=False)
                     data['TIC'] = equity
                     self._all_data = pd.concat([self._all_data, data])
         except Exception as e:
