@@ -1,11 +1,9 @@
 # Import Statements
 
 from logger._logger import logger, get_exception_line_no
-from utils.utils import df_to_table, filter_database
 from screener.investor import MarketScreener
 from display.display import displayDf, displayString, rules, panelShow
 
-import numpy as np
 
 logger_main = logger.getLogger("main")
 
