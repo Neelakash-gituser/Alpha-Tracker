@@ -1,4 +1,5 @@
 import os
+import datetime
 import pandas as pd
 import datetime as dt
 
@@ -109,6 +110,7 @@ class MarketScreener:
                     
                     self._visual_data = pd.concat([self._visual_data, df.T])
                     self._filter_data = pd.concat([self._filter_data, newDf.T])
+                    self.save_index_stats() # saves the dataframe
                 except:
                     pass
         except:
@@ -124,21 +126,21 @@ class MarketScreener:
         # Mapper                                                                                                                                                    
         tracker = {"D":"Days", "M":"Months", "W":"Weeks", "Q":"Quarters", "Y":"Years"}
         df = pd.DataFrame([
-                                startDate.strftime("%Y-%m-%d"),
-                                endDate.strftime("%Y-%m-%d"),
-                                round(no_of_periods),
-                                f'{round(annual_ret*100, 2)}%',
-                                f'{round(annual_vol*100, 2)}%',
-                                f'{round(sharpe, 2)}',
-                                f'{round(max_drawdown*100, 2)}%',
-                                f'{round(var*100, 2)}%',
-                                f'{round(cvar*100, 2)}%',
-                                f'{round(ret_1_ch*100, 2)}%',
-                                f'{self._currency} {round(high, 2)}',
-                                f'{self._currency} {round(low, 2)}',
-                                f'{self._currency} {round(current_price, 2)}'
-                                ], index=['Start Date', 'End Date', f'Period (in {tracker[frequency]})', 'Annual Return', 'Annual Volatility', 'Sharpe Ratio', 
-                                        'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price'], columns=[f'{stock_name}'])
+                            startDate.strftime("%Y-%m-%d"),
+                            endDate.strftime("%Y-%m-%d"),
+                            round(no_of_periods),
+                            f'{round(annual_ret*100, 2)}%',
+                            f'{round(annual_vol*100, 2)}%',
+                            f'{round(sharpe, 2)}',
+                            f'{round(max_drawdown*100, 2)}%',
+                            f'{round(var*100, 2)}%',
+                            f'{round(cvar*100, 2)}%',
+                            f'{round(ret_1_ch*100, 2)}%',
+                            f'{self._currency} {round(high, 2)}',
+                            f'{self._currency} {round(low, 2)}',
+                            f'{self._currency} {round(current_price, 2)}'
+                            ], index=['Start Date', 'End Date', f'Period (in {tracker[frequency]})', 'Annual Return', 'Annual Volatility', 'Sharpe Ratio', 
+                                    'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price'], columns=[f'{stock_name}'])
         
         return df.T
 
@@ -206,3 +208,6 @@ class MarketScreener:
     
     def getAllindexdata(self) -> pd.DataFrame:
         return self._all_stocks
+    
+    def save_index_stats(self) -> None:
+        self._index_stocks_stats.to_excel(f"data/statsdata/STATS{''.join(self.indexes.split('/'))}_{datetime.datetime.now().date().strftime('%d%b%Y')}")

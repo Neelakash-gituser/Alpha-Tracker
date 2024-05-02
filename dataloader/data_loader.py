@@ -1,13 +1,16 @@
+import datetime
 import warnings
 warnings.filterwarnings("ignore")
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
+import os
+import glob
 import pandas as pd
 import yfinance as yf
 import logging as log
 
 from yahoo_fin import stock_info as sf
-from utils.utils import check_market, make_ticker_nse
+from utils.utils import check_market, make_ticker_nse_bse, make_ticker_nse
 from logger._logger import logger, get_exception_line_no
 
 log.getLogger('yfinance').setLevel(log.CRITICAL)
@@ -42,7 +45,7 @@ class Dataloader:
         self._index_dictionary = {'NIFTY_50':('^NSEI', 'sf.tickers_nifty50()'), 'NIFTY_BANK':('^NSEBANK', 'sf.tickers_niftybank()'),
                                   'NASDAQ':('^IXIC', 'sf.tickers_nasdaq()'), 'SP500':('^GSPC', 'sf.tickers_sp500()'), 'FTSE250':('^FTMC', 'sf.tickers_ftse250()'),
                                   'FTSE100':('^FTSE', 'sf.tickers_ftse100()'), 'DOW':('^DJI', 'sf.tickers_dow()'), 'IBOVESPA':('^BVSP', 'sf.tickers_ibovespa()'),
-                                  'NSE':('^NSEI', 'None')}
+                                  'NSE/BSE':('^NSEI', 'None')}
         
         
     def load_single_instrument(self, stock_name) -> pd.DataFrame:
@@ -110,11 +113,18 @@ class Dataloader:
         """
         try:
             self._all_data = pd.DataFrame()
-            for equity in self._tickers:
-                if equity != "MM.NS":
-                    data = yf.download(equity, start=self._start_date, end=self._end_date, progress=False)
-                    data['TIC'] = equity
-                    self._all_data = pd.concat([self._all_data, data])
+
+            if len(glob.glob(os.path.join("data", f"ALLDATA{''.join(self._index.split('/'))}_{datetime.datetime.now().date().strftime('%d%b%Y')}.csv"))) > 0:
+                self._all_data = pd.read_csv(f"data/ALLDATA{''.join(self._index.split('/'))}_{datetime.datetime.now().date().strftime('%d%b%Y')}.csv", index_col=0, parse_dates=True)[['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume', 'TIC']]
+            else:
+                for equity in self._tickers:
+                    if equity != "MM.NS":
+                        data = yf.download(equity, start=self._start_date, end=self._end_date, progress=False).dropna()
+                        data['TIC'] = equity
+                        self._all_data = pd.concat([self._all_data, data])
+                        logger.info(f"Equity Downloading = {equity}, len = {len(self._all_data)}")
+                # save the all data 
+                self.save_file()
         except Exception as e:
             logger_data.info(f"problem {e} in load_data() at line no.={get_exception_line_no()}")
 
@@ -164,7 +174,7 @@ class Dataloader:
             if eval(self._index_dictionary[self.getIndex()][1]) != None and check_market(self._index):
                 self._tickers = make_ticker_nse(eval(self._index_dictionary[self.getIndex()][1]))
             elif eval(self._index_dictionary[self.getIndex()][1]) == None and check_market(self._index):
-                self._tickers = make_ticker_nse(make_ticker_nse(pd.read_csv('datastore/NSE550.csv')['Symbol'].to_list()))
+                self._tickers = make_ticker_nse_bse(pd.read_csv('datastore/NSE_BSE_LIST.csv'))
             else:
                 self._tickers = eval(self._index_dictionary[self.getIndex()][1])
         except Exception as e:
@@ -283,3 +293,10 @@ class Dataloader:
             return self._all_data
         except Exception as e:
             logger_data.info(f"problem {e} in getAllindexdata() at line no.={get_exception_line_no()}")
+
+    
+    def save_file(self) -> None:
+        """
+        Saves the all data file.
+        """
+        self._all_data.to_csv(f"data/ALLDATA{''.join(self._index.split('/'))}_{datetime.datetime.now().date().strftime('%d%b%Y')}.csv")

@@ -4,3 +4,5 @@ __pycache__/
 TestCase.ipynb
 screenshots/
 *.log
+*.csv
+*.xlsx

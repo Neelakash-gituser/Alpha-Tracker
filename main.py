@@ -18,8 +18,8 @@ while not Done:
         manager = {"y":True, "n":False}
 
         # Show the options
-        indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE']
-        index = indexes[int(displayString("\n\nChoose the Index:\n\n1. Nifty 50\n2. Bank Nifty\n3. Nasdaq\n4. S&P500\n5. FTSE250\n6. FTSE100\n7. DOW\n8. IBOVESPA\n9. NSE\n\nEnter Index Code", 
+        indexes = ['NIFTY_50', 'NIFTY_BANK', 'NASDAQ', 'SP500', 'FTSE250', 'FTSE100', 'DOW', 'IBOVESPA', 'NSE/BSE']
+        index = indexes[int(displayString("\n\nChoose the Index:\n\n1. Nifty 50\n2. Bank Nifty\n3. Nasdaq\n4. S&P500\n5. FTSE250\n6. FTSE100\n7. DOW\n8. IBOVESPA\n9. NSE/BSE\n\nEnter Index Code", 
                                         style="bold magenta")) - 1]
 
         # choose lookback period

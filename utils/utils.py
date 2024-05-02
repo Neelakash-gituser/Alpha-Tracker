@@ -161,9 +161,29 @@ def check_market(index:str) -> bool:
     True if Indian Market else False
     """
     try:
-        return index in ['NIFTY_50', 'NIFTY_BANK', 'NSE'] 
+        return index in ['NIFTY_50', 'NIFTY_BANK', 'NSE/BSE'] 
     except Exception as e:
         logger_utils.info(f"problem {e} check_market() at line no.={get_exception_line_no()}")
+
+
+def make_ticker_nse_bse(tickers:pd.DataFrame) -> list:
+    """
+    Returns NSE ticker with .NS in the suffix, BO for BSE.
+    """
+    symbols, exch = tickers['Symbol'].to_list(), tickers['ExchID'].to_list()
+    try:
+        ticker_list = []
+        for tick, ex in zip(symbols, exch):
+            if ex == "BSE":
+                tick = tick + ".BO"
+            elif ex == "NSE":
+                tick = tick + ".NS"
+
+            ticker_list.append(tick)
+        
+        return ticker_list
+    except Exception as e:
+        logger_utils.info(f"problem {e} make_ticker_nse_bse() at line no.={get_exception_line_no()}")
 
 
 def make_ticker_nse(tickers:list) -> list:
