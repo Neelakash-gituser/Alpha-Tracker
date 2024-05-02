@@ -5,10 +5,12 @@ import datetime as dt
 
 from rich.progress import track
 from utils.utils import filter_database
+from logger._logger import logger, get_exception_line_no
 from dataloader.data_loader import Dataloader
 from stats.price_stats import getPricestats, corr_cals
 from portfolio_allocation.allocator import asset_allocation
 
+logger = logger.getLogger("investor_module")
 
 class MarketScreener:
 
@@ -110,9 +112,12 @@ class MarketScreener:
                     
                     self._visual_data = pd.concat([self._visual_data, df.T])
                     self._filter_data = pd.concat([self._filter_data, newDf.T])
-                    self.save_index_stats() # saves the dataframe
+                
                 except:
                     pass
+
+            # saves the dataframe
+            self.save_index_stats() 
         except:
             pass
 
@@ -210,4 +215,7 @@ class MarketScreener:
         return self._all_stocks
     
     def save_index_stats(self) -> None:
-        self._index_stocks_stats.to_excel(f"data/statsdata/STATS{''.join(self.indexes.split('/'))}_{datetime.datetime.now().date().strftime('%d%b%Y')}")
+        try:
+            self._visual_data.to_excel(f"data/statsdata/STATS{(''.join(self.indexes.split('/')))}_{datetime.datetime.now().date().strftime('%d%b%Y')}.xlsx")
+        except Exception as e:
+            logger.info(f"save_index_stats() - {e} in line no. = {get_exception_line_no()}, index = {self.indexes}")
