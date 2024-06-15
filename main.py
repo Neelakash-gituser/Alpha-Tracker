@@ -28,8 +28,18 @@ while not Done:
         # New Section
         rules(text="Functionalities")
 
+        # currency sign
+        if index in ['NASDQ', 'DOW', 'SP500']:
+            currency = '$'
+        elif index in ['FTSE100', 'FTSE250', 'SP500']:
+            currency = '£'
+        elif index in ['IBOVESPA']:
+            currency = 'R$'
+        else:
+            currency = '₹' # default Indian currency
+
         # create the investor
-        investor = MarketScreener(indexes=index, lookback=lookback)
+        investor = MarketScreener(indexes=index, lookback=lookback, currency=currency)
 
         state = True
         initialised = False
@@ -94,10 +104,10 @@ while not Done:
             else:
                 displayString("\nNot a valid response", style="bold red")
             
-            state = manager[displayString("\nKeep exploring the same index ? [y/n]", style="bold green").lower()]
+            state = manager[displayString("\nKeep exploring the same index ? (Y-Yes|N-No)", style="bold green").lower()]
 
         # continue using screener check
-        Done = not manager[displayString("\nExplore some new index ? [y/n]", style="bold green").lower()]
+        Done = not manager[displayString("\nExplore some new index ? (Y-Yes|N-No)", style="bold green").lower()]
     
     except Exception as e:
         logger_main.info(f"problem {e} in main() at line no.={get_exception_line_no()}")

@@ -77,7 +77,7 @@ class Dataloader:
             >>> data = load_single_instrument('AAPL')
         """
         try:
-            data = yf.download(stock_name, start=self._start_date, end=self._end_date, progress=False)
+            data = yf.download(stock_name.upper(), start=self._start_date, end=self._end_date, progress=False)
             return data
         except Exception as e:
             logger_data.info(f"problem {e} in load_single_instrument() at line no.={get_exception_line_no()}")

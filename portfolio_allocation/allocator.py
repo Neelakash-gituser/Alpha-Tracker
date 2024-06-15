@@ -116,7 +116,8 @@ def asset_allocation(cash:float, df:pd.DataFrame, opt_method:str, frequency:str,
         if opt_method == "max_sharpe" or opt_method == "min_vol":
             num_shares = {'Invested (₹)': np.around(total_invested, 2), 'Balance (₹)': np.around(balance, 2), 'Expected Return (%)': f'{np.around(er, 2)*100}%', 
                                                                                                                 'Expected Volatility (%)': f'{np.around(ev, 2)*100}%',
-                                                                                                                'Expected Sharpe Ratio': np.around(es, 2)}
+                                                                                                                'Expected Sharpe Ratio': np.around(es, 2),
+                                                                                                                'Expected Portfolio Beta': 1}
         else:
             num_shares = {'Invested': np.around(total_invested, 2), 'Balance': np.around(balance, 2)}
 

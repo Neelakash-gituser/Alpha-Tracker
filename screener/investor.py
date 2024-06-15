@@ -75,6 +75,8 @@ class MarketScreener:
                     resamp = self._data_loader.resampler(data, frequency=frequency, dataType="securities")
                     startDate, endDate, no_of_periods, frequency, annual_ret, annual_vol, sharpe, max_drawdown, var, cvar, ret_1_ch, high, low, current_price = getPricestats(resamp.reset_index(), 
                                                                                                                                     frequency=frequency, date_col="Date", price_col="Adj Close")
+                    # beta of the stock 
+                    beta = self.calculate_beta(price_series=data, baseline_price_series=self._baseline)
                     
                     df = pd.DataFrame([
                                 startDate.strftime("%Y-%m-%d"),
@@ -89,9 +91,10 @@ class MarketScreener:
                                 f'{round(ret_1_ch*100, 2)}%',
                                 f'{self._currency} {round(high, 2)}',
                                 f'{self._currency} {round(low, 2)}',
-                                f'{self._currency} {round(current_price, 2)}'
+                                f'{self._currency} {round(current_price, 2)}',
+                                f'{round(beta, 2)}'
                                 ], index=['Start Date', 'End Date', f'Period (in {tracker[frequency]})', 'Annual Return', 'Annual Volatility', 'Sharpe Ratio', 
-                                        'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price'], columns=[f'{tick}'])
+                                        'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price', 'Beta'], columns=[f'{tick}'])
                     
                     newDf = pd.DataFrame([
                                 startDate.strftime("%Y-%m-%d"),
@@ -106,9 +109,10 @@ class MarketScreener:
                                 round(ret_1_ch*100, 2),
                                 round(high, 2),
                                 round(low, 2),
-                                round(current_price, 2)
+                                round(current_price, 2),
+                                round(beta, 2)
                                 ], index=['Start Date', 'End Date', f'Period (in {tracker[frequency]})', 'Annual Return', 'Annual Volatility', 'Sharpe Ratio', 
-                                        'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price'], columns=[f'{tick}'])
+                                        'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price', 'Beta'], columns=[f'{tick}'])
                     
                     self._visual_data = pd.concat([self._visual_data, df.T])
                     self._filter_data = pd.concat([self._filter_data, newDf.T])
@@ -128,6 +132,9 @@ class MarketScreener:
         data = self._data_loader.resampler(df=self._data_loader.load_single_instrument(stock_name=stock_name), dataType="securities", frequency=frequency)
         startDate, endDate, no_of_periods, frequency, annual_ret, annual_vol, sharpe, max_drawdown, var, cvar, ret_1_ch, high, low, current_price = getPricestats(df=data.reset_index(), 
                                                                                                                                                                   frequency=frequency)
+        # calculate stock beta
+        beta = self.calculate_beta(price_series=data, baseline_price_series=self._baseline)
+
         # Mapper                                                                                                                                                    
         tracker = {"D":"Days", "M":"Months", "W":"Weeks", "Q":"Quarters", "Y":"Years"}
         df = pd.DataFrame([
@@ -143,9 +150,10 @@ class MarketScreener:
                             f'{round(ret_1_ch*100, 2)}%',
                             f'{self._currency} {round(high, 2)}',
                             f'{self._currency} {round(low, 2)}',
-                            f'{self._currency} {round(current_price, 2)}'
+                            f'{self._currency} {round(current_price, 2)}',
+                            f'{round(beta, 2)}'
                             ], index=['Start Date', 'End Date', f'Period (in {tracker[frequency]})', 'Annual Return', 'Annual Volatility', 'Sharpe Ratio', 
-                                    'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price'], columns=[f'{stock_name}'])
+                                    'Maximum Drawdown', 'VaR', 'cVaR', f'1 {tracker[frequency][:-1]} Change (%)', 'Highest Peak', 'Lowest Trough', 'Current Price', 'Beta'], columns=[f'{stock_name}'])
         
         return df.T
 
@@ -219,3 +227,17 @@ class MarketScreener:
             self._visual_data.to_excel(f"data/statsdata/STATS{(''.join(self.indexes.split('/')))}_{datetime.datetime.now().date().strftime('%d%b%Y')}.xlsx")
         except Exception as e:
             logger.info(f"save_index_stats() - {e} in line no. = {get_exception_line_no()}, index = {self.indexes}")
+
+    def calculate_beta(self, price_series:pd.Series, baseline_price_series:pd.Series) -> None:
+        """
+        Calculates the beta of stocks.
+        """
+        try:
+            price_returns = price_series['Adj Close'].pct_change() # calculate price returns
+            baseline_returns = baseline_price_series['Adj Close'].pct_change() # calculate baseline price return
+            covariance = price_returns.cov(baseline_returns)
+
+            # return the beta of the stock.
+            return covariance / baseline_returns.var()
+        except Exception as e:
+            logger.info(f"problem inside calculate_beta() - {e}, at line no. = {get_exception_line_no()}")

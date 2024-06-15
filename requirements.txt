@@ -1,4 +1,3 @@
-financiallib==2.0.3
 pandas==2.1.2
 plotly==5.18.0
 pyportfolioopt==1.5.5

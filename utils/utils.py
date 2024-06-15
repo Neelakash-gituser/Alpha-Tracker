@@ -9,7 +9,6 @@ from logger._logger import logger, get_exception_line_no
 
 logger_utils = logger.getLogger("utils")
 
-
 # Dataframe styling 
 def df_to_table(
     pandas_dataframe: pd.DataFrame,
